@@ -1,0 +1,22 @@
+#test_app.yaml
+url: http://localhost:9000/ussd
+dial: "*1234*1234#"
+sessions:
+  - id: 12345678910
+    phoneNumber: 265888123456
+    description: "Should return a balance of 500 for Zikani"
+    steps:
+      - text: "*123*1234#"
+        expect: "What is your name?"
+      - text: "Zikani"
+        expect: "Welcome, Zikani
+        Choose an item:
+        1. Account detail
+        2. Balance
+        3. Something else
+        # Exit
+        "
+      - text: "3" 
+        expect: "Your balance is: MK 500"
+      - text: "ok"
+        expect: ""
