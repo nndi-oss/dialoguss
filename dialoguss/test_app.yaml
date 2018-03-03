@@ -18,5 +18,3 @@ sessions:
         "
       - text: "3" 
         expect: "Your balance is: MK 500"
-      - text: "ok"
-        expect: ""

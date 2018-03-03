@@ -1,6 +1,8 @@
 DialogUSS
 =========
 
+![logo](./logo-small.png)
+
 `dialoguss` is a cli tool to test USSD applications that are implemented
 as HTTP services (particularly those implemented on [AfricasTalking's](https://africastalking.com/) 
 service or similar).
@@ -45,14 +47,15 @@ Your balance is: MK 500
 ### Automated Dialogue
 
 ```yaml
-#app-auto.yaml
+#app.yaml
 url: http://localhost:9000/ussd
-# dial: "*1234*1234#"
+dial: "*1234*1234#"
 sessions:
   - id: 12345678910
+    phoneNumber: 265888123456
     description: "Should return a balance of 500 for Zikani"
     steps:
-      - text: *123*1234#
+      - text: "*123*1234#"
         expect: "What is your name?"
       - text: "Zikani"
         expect: "Welcome, Zikani
@@ -64,11 +67,10 @@ sessions:
         "
       - text: "3" 
         expect: "Your balance is: MK 500"
-      - text: "ok"
 ```
 
 ```sh
-$ dialoguss -f app-auto.yaml
+$ dialoguss -f app.yaml
 Running tests for session `12345678910`
 ...
 All tests successful
