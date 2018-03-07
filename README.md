@@ -21,6 +21,7 @@ can also be tested via automated tests
 # app.yaml
 url: http://localhost:9000/ussd
 dial: *123*1234#
+phoneNumber: 
 ```
 
 ```sh
@@ -28,20 +29,15 @@ $ dialoguss --interactive -f app.yaml
 Sending *123*1234# to <app>
 USSD Response:
 What is your name?
-> zikani
-
-USSD Response:
+> name: Zikani
 Hello Zikani, choose an item:
 1. Account detail
 2. Balance
 3. Something else
 # Exit
 > 2
-
-USSD Response:
 Your balance is: MK 500
 > ok
-
 ```
 
 ### Automated Dialogue
@@ -57,21 +53,15 @@ sessions:
     steps:
       - text: "*123*1234#"
         expect: "What is your name?"
-      - text: "Zikani"
-        expect: "Welcome, Zikani
-        Choose an item:
-        1. Account detail
-        2. Balance
-        3. Something else
-        # Exit
-        "
-      - text: "3" 
+      - text: "name: Zikani"
+        expect: "Welcome, Zikani\nChoose an item:\n1. Account detail\n2. Balance\n3. Something else\n# Exit"
+      - text: "3"
         expect: "Your balance is: MK 500"
 ```
 
 ```sh
 $ dialoguss -f app.yaml
-Running tests for session `12345678910`
+Running tests for session: 12345678910
 ...
 All tests successful
 ```
