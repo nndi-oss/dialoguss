@@ -178,7 +178,7 @@ class Dialoguss:
         
 def main():
     """Entry point for the CLI program"""
-    parser = ArgumentParser()
+    parser = ArgumentParser(prog="dialoguss")
     parser.add_argument("-i", "--interactive", const='interactive', action='store_const', default=False)
     parser.add_argument("-f", "--file", default="dialoguss.yaml")
     args = parser.parse_args()
