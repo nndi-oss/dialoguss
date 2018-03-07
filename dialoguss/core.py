@@ -25,6 +25,7 @@ class Step(object):
         self.text = text
         self.expect = expect
         self.session = session
+        self.is_last = True
 
     def execute(self, step_input=None):
         """Executes a step and returns the result of the request
@@ -54,9 +55,11 @@ class Step(object):
             # strip out the CONTINUE
             response_text = response_text.replace("CONTINUE", "")
             response_text = response_text.rstrip()
+            self.is_last = False
         elif re.search('END', response_text) is not None:
             response_text = response_text.replace("END", "")
             response_text = response_text.rstrip()
+            self.is_last = True
         return response_text
 
 class DialStep(Step):
@@ -86,13 +89,15 @@ class InteractiveSession(Session):
     def run(self):
         step_no = 0
         response_text = DialStep("","", self).execute()
-        sys.stdout.write(response_text)
+        sys.stdout.write(response_text + '\n')
         while response_text is not None:
             step_no += 1
             step_input = input("> ")
             a_step = Step(step_no, step_input, "", self)
-            response_text = a_step.execute()
+            response_text = a_step.execute(step_input)
             sys.stdout.write(response_text)
+            if a_step.is_last:
+                response_text = None
 
 class AutomatedSession(Session):
     """AutomatedSession runs an automated session that contains pre-defined
