@@ -29,7 +29,7 @@ class Step(object):
 
     def execute(self, step_input=None):
         """Executes a step and returns the result of the request
-        
+
         May return an empty string ("") upon failure
         """
         # print("Processing step no: {}".format(self.step_no))
@@ -87,7 +87,7 @@ class InteractiveSession(Session):
     """InteractiveSession runs an interactive `USSD` session via the CLI"""
     def run(self):
         step_no = 0
-        response_text = DialStep("","", self).execute()
+        response_text = DialStep("", "", self).execute()
         sys.stdout.write(response_text + '\n')
         while response_text is not None:
             step_no += 1
@@ -112,7 +112,8 @@ class AutomatedSession(Session):
             else:
                 result = step.execute(step.text)
             if result != step.expect:
-                sys.stderr.write("StepAssertionError: \n\tExpected={}\n\tGot={}\n".format(step.expect, result))
+                sys.stderr.write(
+                    "StepAssertionError:\n\tExpected={}\n\tGot={}\n".format(step.expect, result))
 
         if not had_error:
             sys.stdout.write("All tests successful tests for session: {}\n".format(self.session_id))
@@ -131,7 +132,7 @@ class Dialoguss:
         if self.is_interactive:
             with open(self.config) as f:
                 yaml_cfg = yaml.load(f)
-        
+
             session = InteractiveSession(
                 # TODO: Generate a random session id here
                 session_id="random_session_id",
@@ -151,7 +152,7 @@ class Dialoguss:
         """Loads the sessions for this application"""
         with open(self.config) as f:
             yaml_cfg = yaml.load(f)
-        
+
         self.session_url = yaml_cfg['url']
         self.dial = yaml_cfg['dial']
 
@@ -172,7 +173,7 @@ class Dialoguss:
                         first_step = False
                         continue
                     session.add_step(Step(i, step['text'], step['expect']))
-                
+
                 self.sessions.append(session)
         
 def main():
