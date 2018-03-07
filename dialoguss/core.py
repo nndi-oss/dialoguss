@@ -103,6 +103,8 @@ class AutomatedSession(Session):
     steps (and their expectations)
     """
     def run(self):
+        sys.stdout.write("Running tests for session: {}\n".format(self.session_id))
+        had_error = False
         for step in self.steps:
             step.session = self
             if isinstance(step, DialStep):
@@ -110,7 +112,10 @@ class AutomatedSession(Session):
             else:
                 result = step.execute(step.text)
             if result != step.expect:
-                print("StepAssertionError: \n\tExpected={}\n\tGot={}".format(step.expect, result))
+                sys.stderr.write("StepAssertionError: \n\tExpected={}\n\tGot={}\n".format(step.expect, result))
+
+        if not had_error:
+            sys.stdout.write("All tests successful tests for session: {}\n".format(self.session_id))
 
 class Dialoguss:
     """Dialoguss is an application that can have one or more pseudo-ussd sessions"""
