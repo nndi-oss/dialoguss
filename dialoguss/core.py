@@ -32,7 +32,7 @@ class Step(object):
         
         May return an empty string ("") upon failure
         """
-        print("Processing step no: {}".format(self.step_no))
+        # print("Processing step no: {}".format(self.step_no))
         text = step_input
         if step_input is None:
             text = ""
@@ -46,7 +46,7 @@ class Step(object):
         response_text = str(res.text)
 
         if res.status_code not in (200, 201):
-            print('RESPONSE ERROR: Got an error', response_text)
+            # print('RESPONSE ERROR: Got an error', response_text)
             # TODO: log the response code and body
             response_text = None
 
@@ -95,7 +95,7 @@ class InteractiveSession(Session):
             step_input = input("> ")
             a_step = Step(step_no, step_input, "", self)
             response_text = a_step.execute(step_input)
-            sys.stdout.write(response_text)
+            sys.stdout.write(response_text + '\n')
             if a_step.is_last:
                 response_text = None
 
