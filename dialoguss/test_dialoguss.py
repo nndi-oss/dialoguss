@@ -1,10 +1,12 @@
 import unittest
-from mock_server import test_app
+import mock_server
+from core import Dialoguss, DialStep, Step, AutomatedSession
 from unittest import TestCase
 DEFAULT_CHANNEL = "384"
 
 class TestAutomatedSession(TestCase):
     def setUp(self):
+        mock_server.test_app.testing = True
         # TODO: run this async?? test_app.run(host="0.0.0.0", port=5000)
         pass
     
@@ -15,7 +17,7 @@ class TestAutomatedSession(TestCase):
             Step(2, "2", "Your balance is: MK 500"),
         ]
         auto = AutomatedSession(
-            url="http://localhost:5000/ussd",
+            url="http://localhost:9000/ussd",
             dial="*123#",
             session_id="12345",
             phone_number="265888123456",
