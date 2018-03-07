@@ -6,6 +6,8 @@ dialoguss.core
 """
 import os
 import os.path
+import re
+import sys
 import yaml
 import requests
 
@@ -40,17 +42,22 @@ class Step(object):
             'channel': self.session.channel
         }
         res = requests.post(self.session.url, data)
-        # print("req: {} res: {}".format(text, res.text))
-        if res.status_code != 200 or res.status_code != 201:
-            # TODO: log the response code and body
-            return ""
+        response_text = str(res.text)
 
-        if res.text.endswith("CONTINUE"):
-            txt_len = len(res.text)
+        if res.status_code not in (200, 201):
+            print('RESPONSE ERROR: Got an error', response_text)
+            # TODO: log the response code and body
+            response_text = None
+
+        if re.search('CONTINUE', response_text) is not None:
+            txt_len = len(response_text)
             # strip out the CONTINUE
-            return res.text[0:txt_len-8]
-        #if res.text.endswith("END"):
-        return ""
+            response_text = response_text.replace("CONTINUE", "")
+            response_text = response_text.rstrip()
+        elif re.search('END', response_text) is not None:
+            response_text = response_text.replace("END", "")
+            response_text = response_text.rstrip()
+        return response_text
 
 class DialStep(Step):
     """DialStep is the first step in the session, dials the USSD service"""
@@ -77,7 +84,15 @@ class Session(metaclass=ABCMeta):
 class InteractiveSession(Session):
     """InteractiveSession runs an interactive `USSD` session via the CLI"""
     def run(self):
-        pass
+        step_no = 0
+        response_text = DialStep("","", self).execute()
+        sys.stdout.write(response_text)
+        while response_text is not None:
+            step_no += 1
+            step_input = input("> ")
+            a_step = Step(step_no, step_input, "", self)
+            response_text = a_step.execute()
+            sys.stdout.write(response_text)
 
 class AutomatedSession(Session):
     """AutomatedSession runs an automated session that contains pre-defined
@@ -91,7 +106,7 @@ class AutomatedSession(Session):
             else:
                 result = step.execute(step.text)
             if result != step.expect:
-                print("StepAssertionError: expected={} got={}".format(step.expect, result))
+                print("StepAssertionError: \n\tExpected={}\n\tGot={}".format(step.expect, result))
 
 class Dialoguss:
     """Dialoguss is an application that can have one or more pseudo-ussd sessions"""
@@ -146,7 +161,7 @@ class Dialoguss:
                         # session.add_step(DialStep(step.text, step.expect))
                         session.add_step(DialStep(step['expect']))
                         first_step = False
-                        break
+                        continue
                     session.add_step(Step(i, step['text'], step['expect']))
                 
                 self.sessions.append(session)
@@ -154,8 +169,8 @@ class Dialoguss:
 def main():
     """Entry point for the CLI program"""
     parser = ArgumentParser()
-    parser.add_argument("--interactive", default=False)
-    parser.add_argument("--file", default="dialoguss.yaml")
+    parser.add_argument("-i", "--interactive", type=bool)
+    parser.add_argument("-f", "--file", default="dialoguss.yaml")
     args = parser.parse_args()
     dialoguss_app = Dialoguss(args.file, args.interactive)
     dialoguss_app.run()
