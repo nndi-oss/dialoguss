@@ -26,6 +26,20 @@ class Step(object):
         self.expect = expect
         self.session = session
         self.is_last = True
+    
+    def send_request(self, data):
+        """Sends a request to the http service
+        :param: data A dict containing `sessionId`, `phoneNumber`, `text` and `channel` keys
+        :return: string or None
+        """
+        res = requests.post(self.session.url, data)
+        response_text = str(res.text)
+
+        if res.status_code not in (200, 201):
+            # print('RESPONSE ERROR: Got an error', response_text)
+            # TODO: log the response code and body
+            response_text = None
+        return response_text
 
     def execute(self, step_input=None):
         """Executes a step and returns the result of the request
@@ -42,14 +56,7 @@ class Step(object):
             'text' : text,
             'channel': self.session.channel
         }
-        res = requests.post(self.session.url, data)
-        response_text = str(res.text)
-
-        if res.status_code not in (200, 201):
-            # print('RESPONSE ERROR: Got an error', response_text)
-            # TODO: log the response code and body
-            response_text = None
-
+        response_text = self.send_request(data)
         if re.search('CONTINUE', response_text) is not None:
             # strip out the CONTINUE
             response_text = response_text.replace("CONTINUE", "")
