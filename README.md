@@ -7,13 +7,35 @@ DialogUSS
 as HTTP services (particularly those implemented on [AfricasTalking's](https://africastalking.com/) 
 service or similar).
 
-It allows you to simulate a session and interact with that session
-via a simple CLI based interface. USSD "sessions" for your application
-can also be tested via automated tests
+It can be used in two ways:
+1. You can simulate a session and interact with that session via a simple CLI based interface or,
+2. You can describe the steps required for a session and automate the session, i.e. automated testing
 
-> NOTE: This is still an early work-in-progress concept
+## Why should I use this?
+
+Glad you asked! Well, mostly this tool will help you reduce costs 
+related to testing your USSD applications.
+The current approach for testing your applications could be to upload 
+the code to your server, pull out your phone and dial the USSD service 
+code linked to your application. 
+
+_That's too much work and costs you time and monies!_
+
+You should use this if you'd like to test your application before deploying 
+it to production.
 
 ## Usage
+
+`dialoguss` requires a YAML file to run. The file describes one application
+and has to contain atleast `url` to the application, `dial` the USSD shortcode for your
+app and a `phoneNumber` to use for the session tests.
+
+For the automated dialogue tests you are required to define `steps` which
+describe the sequence of steps for one USSD session. Steps define the text
+to send to the USSD application and the expected output after sending that 
+text.
+
+Please refer to the examples below:
 
 ### Interactive Dialogue
 
