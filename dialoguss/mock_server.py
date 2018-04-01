@@ -17,37 +17,28 @@ def test_ussd_handler():
     test_app.logger.debug('Got text: {}'.format(text))
 
     if len(text) < 1:
-        return """What is your name?
-CONTINUE"""
+        return """CON What is your name?"""
 
     
     if re.match("name\:", text) is not None:
         name = text.replace("name:", "").strip()
-        res_ = """Welcome, {}
+        res_ = """CON Welcome, {}
 Choose an item:
 1. Account detail
 2. Balance
 3. Something else
-# Exit
-CONTINUE
-""".format(name)
+# Exit""".format(name)
         return res_
 
     if text == "1" or text == "1.":
-        return """Your account is inactive
-CONTINUE
-"""
+        return """CON Your account is inactive"""
 
     if text == "2" or text == "2.":
-        return """Your balance is: MK 500
-CONTINUE
-"""
+        return """END Your balance is: MK 500"""
 
     if text == "3" or text == "3.":
-        return """There is nothing else, /(^_^)\\
-END
-"""
-    return "END"
+        return """END There is nothing else, /(^_^)\\"""
+    return "END "
 
 if __name__ == '__main__':
     test_app.run(host="0.0.0.0", port=9000)

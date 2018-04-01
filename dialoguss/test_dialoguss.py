@@ -26,7 +26,7 @@ class TestAutomatedSession(TestCase):
         )
 
         for s in steps:
-            s.send_request = Mock(return_value=s.expect + '\nCONTINUE')
+            s.send_request = Mock(return_value='CON ' + s.expect)
 
         auto.steps = steps
         auto.run()

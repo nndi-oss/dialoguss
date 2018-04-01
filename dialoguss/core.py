@@ -57,12 +57,12 @@ class Step(object):
             'channel': self.session.channel
         }
         response_text = self.send_request(data)
-        if re.search('CONTINUE', response_text) is not None:
+        if re.search('^CON\s?', response_text) is not None:
             # strip out the CONTINUE
-            response_text = response_text.replace("CONTINUE", "")
+            response_text = response_text.replace("CON ", "")
             response_text = response_text.rstrip()
             self.is_last = False
-        elif re.search('END', response_text) is not None:
+        elif re.search('^END\s?', response_text) is not None:
             response_text = response_text.replace("END", "")
             response_text = response_text.rstrip()
             self.is_last = True
