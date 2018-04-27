@@ -4,6 +4,7 @@ dialoguss.core
 ==============
 
 """
+import logging
 import os
 import os.path
 import re
@@ -13,6 +14,8 @@ import requests
 
 from abc import ABCMeta, abstractmethod
 from argparse import ArgumentParser
+
+LOGGER = logging.getLogger(__name__)
 
 class SessionCollector(object):
     """Collects information about a session, such as no of requests etc.."""
@@ -36,8 +39,7 @@ class Step(object):
         response_text = str(res.text)
 
         if res.status_code not in (200, 201):
-            # print('RESPONSE ERROR: Got an error', response_text)
-            # TODO: log the response code and body
+            LOGGER.debug('RESPONSE ERROR (%s) : Got an error: %s', res.status_code, response_text)
             response_text = None
         return response_text
 
@@ -46,7 +48,7 @@ class Step(object):
 
         May return an empty string ("") upon failure
         """
-        # print("Processing step no: {}".format(self.step_no))
+        LOGGER.debug("Processing step no: %s", self.step_no)
         text = step_input
         if step_input is None:
             text = ""
@@ -57,12 +59,12 @@ class Step(object):
             'channel': self.session.channel
         }
         response_text = self.send_request(data)
-        if re.search('^CON\s?', response_text) is not None:
+        if re.search(r'^CON\s?', response_text) is not None:
             # strip out the CONTINUE
             response_text = response_text.replace("CON ", "")
             response_text = response_text.rstrip()
             self.is_last = False
-        elif re.search('^END\s?', response_text) is not None:
+        elif re.search(r'^END\s?', response_text) is not None:
             response_text = response_text.replace("END", "")
             response_text = response_text.rstrip()
             self.is_last = True
