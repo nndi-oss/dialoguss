@@ -10,11 +10,14 @@ import os.path
 import re
 import sys
 import yaml
+import random
 import requests
 
 from abc import ABCMeta, abstractmethod
 from argparse import ArgumentParser
 
+SID_MIN =  1000000
+SID_MAX = 10000000
 LOGGER = logging.getLogger(__name__)
 
 class SessionCollector(object):
@@ -143,8 +146,7 @@ class Dialoguss:
                 yaml_cfg = yaml.load(f)
 
             session = InteractiveSession(
-                # TODO: Generate a random session id here
-                session_id="random_session_id",
+                session_id=random.randrange(SID_MIN, SID_MAX),
                 phone_number=yaml_cfg['phoneNumber'],
                 channel=yaml_cfg['dial'],
                 url=yaml_cfg['url']
