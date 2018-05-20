@@ -85,6 +85,8 @@ class Session(metaclass=ABCMeta):
         self.session_id = kwargs['session_id']
         self.channel = kwargs['channel']
         self.collector = SessionCollector(self)
+        self.session_text = ""
+        self.is_ideal = False
         self.steps = []
 
     def add_step(self, step):
@@ -105,7 +107,13 @@ class InteractiveSession(Session):
             step_no += 1
             step_input = input("> ")
             a_step = Step(step_no, step_input, "", self)
-            response_text = a_step.execute(step_input)
+            self.session_text = "*".join([self.session_text, step_input])
+
+            if self.is_ideal:
+                response_text = a_step.execute(step_input)
+            else:
+                response_text = a_step.execute(self.session_text)
+
             sys.stdout.write(response_text + '\n')
             if a_step.is_last:
                 response_text = None
@@ -122,7 +130,12 @@ class AutomatedSession(Session):
             if isinstance(step, DialStep):
                 result = step.execute()
             else:
-                result = step.execute(step.text)
+                self.session_text = "*".join([self.session_text, step.text])
+                if self.is_ideal:
+                    result = step.execute(step.text)
+                else:
+                    result = step.execute(self.session_text)
+
             if result != step.expect:
                 sys.stderr.write(
                     "StepAssertionError:\n\tExpected={}\n\tGot={}\n".format(step.expect, result))
@@ -191,9 +204,11 @@ def main():
     """Entry point for the CLI program"""
     parser = ArgumentParser(prog="dialoguss")
     parser.add_argument("-i", "--interactive", const='interactive', action='store_const', default=False)
+    parser.add_argument("-x", "--ideal", const='ideal', action='store_const', default=False)
     parser.add_argument("-f", "--file", default="dialoguss.yaml")
     args = parser.parse_args()
     dialoguss_app = Dialoguss(args.file, args.interactive)
+    dialoguss_app.ideal = args.ideal
     dialoguss_app.run()
 
 if __name__ == "__main__":
