@@ -36,7 +36,6 @@ type Step struct {
 	isDial  bool
 	Text    string `yaml:"text"`
 	Expect  string `yaml:"expect"`
-	session *Session
 }
 
 /// DialStep
@@ -49,7 +48,6 @@ func DialStep(expect string) Step {
 		isDial:  true,
 		Text:    "",
 		Expect:  expect,
-		session: nil,
 	}
 }
 
@@ -63,13 +61,12 @@ func NewStep(i int, text string, expect string) Step {
 		isDial:  false,
 		Text:    text,
 		Expect:  expect,
-		session: nil,
 	}
 }
 
 /// Executes a step and returns the result of the request
 /// May return an empty string ("") upon failure
-func (s *Step) Execute(session *Session) (string, error) {
+func (s Step) Execute(session *Session) (string, error) {
 	data := url.Values{}
 	data.Set("sessionId", session.ID)
 	data.Set("phoneNumber", session.PhoneNumber)
@@ -178,25 +175,36 @@ func (d *Dialoguss) LoadConfig() error {
 func (d *Dialoguss) RunAutomatedSessions() error {
 	var wg sync.WaitGroup
 	wg.Add(len(d.config.Sessions))
+
 	sessionErrors := make(map[string]error)
 
 	for _, session := range d.config.Sessions {
-		s := &session
-		//go func() {
-		s.client = &http.Client{}
-		s.client.Timeout = 10 * time.Second
-		s.url = d.config.URL
-		err := s.Run()
-		if err != nil {
-			sessionErrors[s.ID] = err
+		steps := make([]Step, len(session.Steps))
+		copy(steps, session.Steps)
+
+		s := &Session {
+			ID: session.ID,
+			Description: session.Description,
+			PhoneNumber: session.PhoneNumber,
+			Steps: steps,
+			url: d.config.URL,
+			client: &http.Client{},
 		}
-		wg.Done()
-		//}()
+		
+		s.client.Timeout = 10 * time.Second
+
+		go func() {
+			defer wg.Done()
+			err := s.Run()
+			if err != nil {
+				//sessionErrors <-fmt.Sprintf("Error in Session %s. Got: %s ", s.ID, err)
+				sessionErrors[s.ID] = err
+			}
+		}()
 	}
-	wg.Wait()
-	// TODO: collect errors and return any here
+	wg.Wait()	
 	for key, val := range sessionErrors {
-		log.Printf("SessionID=%s Got error=%s", key, val)
+		log.Printf("Got error in session %s: %s", key, val)
 	}
 	return nil
 }
