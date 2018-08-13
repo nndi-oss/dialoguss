@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"flag"
 	"fmt"
 	"io/ioutil"
@@ -31,47 +32,51 @@ func UnexpectedResultError(want string, have string) error {
 }
 
 type Step struct {
-	StepNo  int
-	isLast  bool
-	isDial  bool
-	Text    string `yaml:"text"`
-	Expect  string `yaml:"expect"`
+	StepNo int
+	isLast bool
+	isDial bool
+	Text   string `yaml:"text"`
+	Expect string `yaml:"expect"`
 }
 
 /// DialStep
 ///
 /// DialStep is the first step in the session, dials the USSD service
-func DialStep(expect string) Step {
-	return Step{
-		StepNo:  0,
-		isLast:  false,
-		isDial:  true,
-		Text:    "",
-		Expect:  expect,
+func DialStep(expect string) *Step {
+	return &Step{
+		StepNo: 0,
+		isLast: false,
+		isDial: true,
+		Text:   "",
+		Expect: expect,
 	}
 }
 
 /// NewStep
 ///
 /// a subsequent step in the session to the USSD service
-func NewStep(i int, text string, expect string) Step {
-	return Step{
-		StepNo:  i,
-		isLast:  false,
-		isDial:  false,
-		Text:    text,
-		Expect:  expect,
+func NewStep(i int, text string, expect string) *Step {
+	return &Step{
+		StepNo: i,
+		isLast: false,
+		isDial: false,
+		Text:   text,
+		Expect: expect,
 	}
 }
 
 /// Executes a step and returns the result of the request
 /// May return an empty string ("") upon failure
-func (s Step) Execute(session *Session) (string, error) {
+func (s *Step) Execute(session *Session) (string, error) {
 	data := url.Values{}
 	data.Set("sessionId", session.ID)
 	data.Set("phoneNumber", session.PhoneNumber)
-	data.Set("text", s.Text) // TODO(zikani): concat the input
-	data.Set("channel", "")  // TODO: Get the channel
+	var text = s.Text
+	if &text == nil {
+		return "", errors.New("Input Text cannot be nil")
+	}
+	data.Set("text", text)  // TODO(zikani): concat the input
+	data.Set("channel", "") // TODO: Get the channel
 
 	res, err := session.client.PostForm(session.url, data)
 	if err != nil {
@@ -98,10 +103,10 @@ func (s Step) Execute(session *Session) (string, error) {
 }
 
 type Session struct {
-	ID          string `yaml:"id"`
-	PhoneNumber string `yaml:"phoneNumber"`
-	Description string `yaml:"description"`
-	Steps       []Step `yaml:"steps"`
+	ID          string  `yaml:"id"`
+	PhoneNumber string  `yaml:"phoneNumber"`
+	Description string  `yaml:"description"`
+	Steps       []*Step `yaml:"steps"`
 	url         string
 	client      *http.Client
 }
@@ -114,13 +119,13 @@ type DialogussConfig struct {
 }
 
 /// AddStep adds step to session
-func (s *Session) AddStep(step Step) {
+func (s *Session) AddStep(step *Step) {
 	s.Steps = append(s.Steps, step)
 }
 
 func NewInteractiveSession(d DialogussConfig) *Session {
 	return &Session{
-		ID:          string(rand.Intn(99999)),
+		ID:          fmt.Sprintf("DialogussSession__%d", rand.Uint64()),
 		PhoneNumber: d.PhoneNumber,
 		Description: "Interactive Session",
 		Steps:       nil,
@@ -133,7 +138,7 @@ func (s *Session) Run() error {
 	first := true
 	for i, step := range s.Steps {
 		if first {
-			DialStep(step.Expect).Execute(s)
+			step.Execute(s)
 			first = false
 			continue
 		}
@@ -148,6 +153,44 @@ func (s *Session) Run() error {
 		}
 	}
 	log.Printf("All steps in session %s run successfully", s.ID)
+	return nil
+}
+
+func prompt() string {
+	var s string
+	fmt.Print("Enter value> ")
+	fmt.Scanln(&s)
+	return s
+}
+
+func (s *Session) RunInteractive() error {
+	var input, output string
+	var err error
+	var step *Step
+	step = DialStep("")
+	output, err = step.Execute(s)
+	fmt.Printf("Dialing app using:\n\tPhoneNumber:%s\n\tUrl:%s\n\tSessionID:%s\n",
+		s.PhoneNumber,
+		s.url,
+		s.ID,
+	)
+	if err != nil {
+		return err
+	}
+	fmt.Println(output)
+	for i := 0; !step.isLast; i++ {
+		input = prompt()
+		step = NewStep(i, input, "")
+		output, err = step.Execute(s)
+		if err != nil {
+			return err
+		}
+		fmt.Println(output)
+		if step.isLast {
+			break
+		}
+	}
+
 	return nil
 }
 
@@ -179,18 +222,18 @@ func (d *Dialoguss) RunAutomatedSessions() error {
 	sessionErrors := make(map[string]error)
 
 	for _, session := range d.config.Sessions {
-		steps := make([]Step, len(session.Steps))
+		steps := make([]*Step, len(session.Steps))
 		copy(steps, session.Steps)
 
-		s := &Session {
-			ID: session.ID,
+		s := &Session{
+			ID:          session.ID,
 			Description: session.Description,
 			PhoneNumber: session.PhoneNumber,
-			Steps: steps,
-			url: d.config.URL,
-			client: &http.Client{},
+			Steps:       steps,
+			url:         d.config.URL,
+			client:      &http.Client{},
 		}
-		
+
 		s.client.Timeout = 10 * time.Second
 
 		go func() {
@@ -202,7 +245,7 @@ func (d *Dialoguss) RunAutomatedSessions() error {
 			}
 		}()
 	}
-	wg.Wait()	
+	wg.Wait()
 	for key, val := range sessionErrors {
 		log.Printf("Got error in session %s: %s", key, val)
 	}
@@ -214,7 +257,7 @@ func (d *Dialoguss) Run() error {
 	// log.Print("Running dialoguss with config", d.config)
 	if d.isInteractive {
 		session := NewInteractiveSession(d.config)
-		return session.Run()
+		return session.RunInteractive()
 	}
 
 	return d.RunAutomatedSessions()
