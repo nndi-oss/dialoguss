@@ -119,9 +119,12 @@ func ussdEnd(text string) string {
 	return fmt.Sprintf("END %s", text)
 }
 
+/*
+only uncomment this for testing manually
 func main() {
 	s := CreateHTTPServer()
 	if err := s.ListenAndServe(); err != nil {
 		log.Fatalf("Failed to start ussd server")
 	}
 }
+*/
