@@ -24,6 +24,15 @@ var (
 	reUssdEnd   = regexp.MustCompile(`^END\s?`)
 )
 
+const (
+	INTERACTIVE_DIAL_TEMPLATE = `Dialing app using:
+
+	Phone: %s
+	Url: %s
+	SessionID:%s
+`
+)
+
 /// UnexpectedResultError
 ///
 /// Unexpected result from the USSD application
@@ -124,6 +133,7 @@ func (s *Session) AddStep(step *Step) {
 }
 
 func NewInteractiveSession(d DialogussConfig) *Session {
+	rand.Seed(time.Now().UnixNano())
 	return &Session{
 		ID:          fmt.Sprintf("DialogussSession__%d", rand.Uint64()),
 		PhoneNumber: d.PhoneNumber,
@@ -167,9 +177,10 @@ func (s *Session) RunInteractive() error {
 	var input, output string
 	var err error
 	var step *Step
+	// First Step for the Session is to dial
 	step = DialStep("")
 	output, err = step.Execute(s)
-	fmt.Printf("Dialing app using:\n\tPhoneNumber:%s\n\tUrl:%s\n\tSessionID:%s\n",
+	fmt.Printf(INTERACTIVE_DIAL_TEMPLATE,
 		s.PhoneNumber,
 		s.url,
 		s.ID,
@@ -178,9 +189,10 @@ func (s *Session) RunInteractive() error {
 		return err
 	}
 	fmt.Println(output)
+	// Execute other steps if we haven't received an "END" response
 	for i := 0; !step.isLast; i++ {
 		input = prompt()
-		step = NewStep(i, input, "")
+		step = NewStep(i, "*" + input, "")
 		output, err = step.Execute(s)
 		if err != nil {
 			return err
