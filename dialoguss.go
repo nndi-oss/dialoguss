@@ -20,11 +20,14 @@ import (
 var (
 	interactive bool
 	file        string
+	trurouteMode bool
 	reUssdCon   = regexp.MustCompile(`^CON\s?`)
 	reUssdEnd   = regexp.MustCompile(`^END\s?`)
 )
 
 const (
+	API_TYPE_AFRICASTALKING = "AT_USSD"
+	API_TYPE_TRUROUTE = "TR_USSD"
 	INTERACTIVE_DIAL_TEMPLATE = `Dialing app using:
 
 	Phone: %s
@@ -77,6 +80,16 @@ func NewStep(i int, text string, expect string) *Step {
 /// Executes a step and returns the result of the request
 /// May return an empty string ("") upon failure
 func (s *Step) Execute(session *Session) (string, error) {
+	if session.ApiType == API_TYPE_TRUROUTE {
+		return s.executeAsTruRouteRequest(session)
+	}
+	
+	return s.executeAsAfricasTalking(session)
+}
+
+/// Executes a step as an AfricasTalking API request
+/// May return an empty string ("") upon failure
+func (s *Step) executeAsAfricasTalking(session *Session) (string, error) {
 	data := url.Values{}
 	data.Set("sessionId", session.ID)
 	data.Set("phoneNumber", session.PhoneNumber)
@@ -118,6 +131,7 @@ type Session struct {
 	Steps       []*Step `yaml:"steps"`
 	url         string
 	client      *http.Client
+	ApiType string
 }
 
 type DialogussConfig struct {
@@ -233,6 +247,11 @@ func (d *Dialoguss) RunAutomatedSessions() error {
 
 	sessionErrors := make(map[string]error)
 
+	apiType := API_TYPE_AFRICASTALKING
+	if trurouteMode {
+		apiType = API_TYPE_TRUROUTE
+	}
+	
 	for _, session := range d.config.Sessions {
 		steps := make([]*Step, len(session.Steps))
 		copy(steps, session.Steps)
@@ -244,6 +263,7 @@ func (d *Dialoguss) RunAutomatedSessions() error {
 			Steps:       steps,
 			url:         d.config.URL,
 			client:      &http.Client{},
+			ApiType: apiType,
 		}
 
 		s.client.Timeout = 10 * time.Second
@@ -277,6 +297,7 @@ func (d *Dialoguss) Run() error {
 
 func init() {
 	flag.BoolVar(&interactive, "i", false, "Interactive")
+	flag.BoolVar(&trurouteMode, "truroute-mode", false, "TruRoute USSD mode for developing USSD apps on TNM services")
 	flag.StringVar(&file, "f", "dialoguss.yml", "Dialoguss configuration file")
 }
 
