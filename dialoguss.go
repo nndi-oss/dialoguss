@@ -18,16 +18,16 @@ import (
 )
 
 var (
-	interactive bool
-	file        string
+	interactive  bool
+	file         string
 	trurouteMode bool
-	reUssdCon   = regexp.MustCompile(`^CON\s?`)
-	reUssdEnd   = regexp.MustCompile(`^END\s?`)
+	reUssdCon    = regexp.MustCompile(`^CON\s?`)
+	reUssdEnd    = regexp.MustCompile(`^END\s?`)
 )
 
 const (
-	API_TYPE_AFRICASTALKING = "AT_USSD"
-	API_TYPE_TRUROUTE = "TR_USSD"
+	API_TYPE_AFRICASTALKING   = "AT_USSD"
+	API_TYPE_TRUROUTE         = "TR_USSD"
 	INTERACTIVE_DIAL_TEMPLATE = `Dialing app using:
 
 	Phone: %s
@@ -83,7 +83,7 @@ func (s *Step) Execute(session *Session) (string, error) {
 	if session.ApiType == API_TYPE_TRUROUTE {
 		return s.executeAsTruRouteRequest(session)
 	}
-	
+
 	return s.executeAsAfricasTalking(session)
 }
 
@@ -131,7 +131,7 @@ type Session struct {
 	Steps       []*Step `yaml:"steps"`
 	url         string
 	client      *http.Client
-	ApiType string
+	ApiType     string
 }
 
 type DialogussConfig struct {
@@ -206,7 +206,7 @@ func (s *Session) RunInteractive() error {
 	// Execute other steps if we haven't received an "END" response
 	for i := 0; !step.isLast; i++ {
 		input = prompt()
-		step = NewStep(i, "*" + input, "")
+		step = NewStep(i, "*"+input, "")
 		output, err = step.Execute(s)
 		if err != nil {
 			return err
@@ -251,7 +251,7 @@ func (d *Dialoguss) RunAutomatedSessions() error {
 	if trurouteMode {
 		apiType = API_TYPE_TRUROUTE
 	}
-	
+
 	for _, session := range d.config.Sessions {
 		steps := make([]*Step, len(session.Steps))
 		copy(steps, session.Steps)
@@ -263,7 +263,7 @@ func (d *Dialoguss) RunAutomatedSessions() error {
 			Steps:       steps,
 			url:         d.config.URL,
 			client:      &http.Client{},
-			ApiType: apiType,
+			ApiType:     apiType,
 		}
 
 		s.client.Timeout = 10 * time.Second

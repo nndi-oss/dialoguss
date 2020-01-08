@@ -9,9 +9,9 @@ import (
 )
 
 const (
-	TRUROUTE_REQUEST = 1 // this is a guess
+	TRUROUTE_REQUEST  = 1 // this is a guess
 	TRUROUTE_RESPONSE = 2
-	TRUROUTE_RELEASE = 3
+	TRUROUTE_RELEASE  = 3
 )
 
 // TruRouteRequest XML struct for the request from a truroute services
@@ -19,23 +19,23 @@ const (
 // See: https://github.com/saulchelewani/truroute-ussd-adapter/
 type TruRouteRequest struct {
 	Ussd struct {
-		Type int `xml:"type"`
+		Type    int    `xml:"type"`
 		Message string `xml:"message"`
 		Session string `xml:"session"`
-		Msisdn string `xml:"msisdn`
+		Msisdn  string `xml:"msisdn`
 	} `xml:"ussd"`
 }
 
 // TruRouteResponse XML struct for the response from a truroute services
-// 
+//
 // See: https://github.com/saulchelewani/truroute-ussd-adapter/blob/master/src/UssdServiceProvider.php
 type TruRouteResponse struct {
 	Ussd struct {
-		Type int `xml:"type"`
+		Type    int    `xml:"type"`
 		Message string `xml:"msg"`
 		Premium struct {
-			Cost int `xml:"cost"`
-			Ref string `xml:"ref"`
+			Cost int    `xml:"cost"`
+			Ref  string `xml:"ref"`
 		} `xml:"premium"`
 		Msisdn string `xml:"msisdn`
 	} `xml:"ussd"`
@@ -61,7 +61,7 @@ func (s *Step) executeAsTruRouteRequest(session *Session) (string, error) {
 		return "", errors.New("Input Text cannot be nil")
 	}
 
-	req := &TruRouteRequest {}
+	req := &TruRouteRequest{}
 
 	req.Ussd.Type = TRUROUTE_RESPONSE
 	if s.isDial {
@@ -91,6 +91,6 @@ func (s *Step) executeAsTruRouteRequest(session *Session) (string, error) {
 	}
 
 	s.isLast = trurouteResponse.isRelease()
-	
+
 	return trurouteResponse.GetText(), nil
 }
