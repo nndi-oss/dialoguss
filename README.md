@@ -7,22 +7,11 @@ DialogUSS
 as HTTP services (particularly those implemented on [AfricasTalking's](https://africastalking.com/) 
 service or similar).
 
+`dialoguss` is useful for testing your USSD applications during development.
+
 It can be used in two ways:
 1. You can simulate a session and interact with that session via a simple CLI based interface or,
 2. You can describe the steps required for a session and automate the session, i.e. automated testing
-
-## Why should I use this?
-
-Glad you asked! Well, mostly this tool will help you reduce costs 
-related to testing your USSD applications.
-The current approach for testing your applications could be to upload 
-the code to your server, pull out your phone and dial the USSD service 
-code linked to your application. 
-
-_That's too much work and costs you time and monies!_
-
-You should use this if you'd like to test your application before deploying 
-it to production.
 
 ## Usage
 
@@ -96,6 +85,19 @@ $ dialoguss -f app.yml
 All steps in session 12345678910 run successfully
 ```
 
+## Why should I use this?
+
+Glad you asked! Well, mostly this tool will help you reduce costs 
+related to testing your USSD applications.
+The current approach for testing your applications could be to upload 
+the code to your server, pull out your phone and dial the USSD service 
+code linked to your application. 
+
+_That's too much work and costs you time and monies!_
+
+You should use this if you'd like to test your application before deploying 
+it to production.
+
 ---
 
-Copyright (c) 2018, NNDI
+Copyright (c) 2018 - 2020, NNDI
