@@ -33,6 +33,7 @@ const (
 	Phone: %s
 	Url: %s
 	SessionID:%s
+	API Type: %s
 `
 )
 
@@ -80,16 +81,16 @@ func NewStep(i int, text string, expect string) *Step {
 /// Executes a step and returns the result of the request
 /// May return an empty string ("") upon failure
 func (s *Step) Execute(session *Session) (string, error) {
-	if session.ApiType == API_TYPE_TRUROUTE {
-		return s.executeAsTruRouteRequest(session)
+	if trurouteMode {
+		return s.ExecuteAsTruRouteRequest(session)
 	}
 
-	return s.executeAsAfricasTalking(session)
+	return s.ExecuteAsAfricasTalking(session)
 }
 
 /// Executes a step as an AfricasTalking API request
 /// May return an empty string ("") upon failure
-func (s *Step) executeAsAfricasTalking(session *Session) (string, error) {
+func (s *Step) ExecuteAsAfricasTalking(session *Session) (string, error) {
 	data := url.Values{}
 	data.Set("sessionId", session.ID)
 	data.Set("phoneNumber", session.PhoneNumber)
@@ -148,6 +149,10 @@ func (s *Session) AddStep(step *Step) {
 
 func NewInteractiveSession(d DialogussConfig) *Session {
 	rand.Seed(time.Now().UnixNano())
+	apiType := API_TYPE_AFRICASTALKING
+	if trurouteMode {
+		apiType = API_TYPE_TRUROUTE
+	}
 	return &Session{
 		ID:          fmt.Sprintf("DialogussSession__%d", rand.Uint64()),
 		PhoneNumber: d.PhoneNumber,
@@ -155,6 +160,7 @@ func NewInteractiveSession(d DialogussConfig) *Session {
 		Steps:       nil,
 		url:         d.URL,
 		client:      &http.Client{},
+		ApiType:     apiType,
 	}
 }
 
@@ -194,11 +200,20 @@ func (s *Session) RunInteractive() error {
 	// First Step for the Session is to dial
 	step = DialStep("")
 	output, err = step.Execute(s)
+
+	apiTypeName := "AfricasTalking USSD"
+	if trurouteMode {
+		apiTypeName = "TNM TruRoute USSD"
+	}
+
 	fmt.Printf(INTERACTIVE_DIAL_TEMPLATE,
 		s.PhoneNumber,
 		s.url,
 		s.ID,
+		apiTypeName,
 	)
+
+	fmt.Println()
 	if err != nil {
 		return err
 	}
@@ -206,7 +221,7 @@ func (s *Session) RunInteractive() error {
 	// Execute other steps if we haven't received an "END" response
 	for i := 0; !step.isLast; i++ {
 		input = prompt()
-		step = NewStep(i, "*"+input, "")
+		step = NewStep(i, input, "")
 		output, err = step.Execute(s)
 		if err != nil {
 			return err
