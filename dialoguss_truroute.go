@@ -9,7 +9,7 @@ import (
 )
 
 const (
-	TRUROUTE_REQUEST  = 1 // this is a guess
+	TRUROUTE_INITIAL  = 1
 	TRUROUTE_RESPONSE = 2
 	TRUROUTE_RELEASE  = 3
 )
@@ -18,44 +18,42 @@ const (
 //
 // See: https://github.com/saulchelewani/truroute-ussd-adapter/
 type TruRouteRequest struct {
-	Ussd struct {
-		Type    int    `xml:"type"`
-		Message string `xml:"message"`
-		Session string `xml:"session"`
-		Msisdn  string `xml:"msisdn`
-	} `xml:"ussd"`
+	XMLName xml.Name `xml:"ussd"`
+	Type    int      `xml:"type"`
+	Message string   `xml:"msg"`
+	Session string   `xml:"sessionid"`
+	Msisdn  string   `xml:"msisdn"`
 }
 
 // TruRouteResponse XML struct for the response from a truroute services
 //
 // See: https://github.com/saulchelewani/truroute-ussd-adapter/blob/master/src/UssdServiceProvider.php
 type TruRouteResponse struct {
-	Ussd struct {
-		Type    int    `xml:"type"`
-		Message string `xml:"msg"`
-		Premium struct {
-			Cost int    `xml:"cost"`
-			Ref  string `xml:"ref"`
-		} `xml:"premium"`
-		Msisdn string `xml:"msisdn`
-	} `xml:"ussd"`
+	XMLName xml.Name `xml:"ussd"`
+	Type    int      `xml:"type"`
+	Message string   `xml:"msg"`
+	Premium struct {
+		Cost int    `xml:"cost"`
+		Ref  string `xml:"ref"`
+	} `xml:"premium"`
+	Msisdn string `xml:"msisdn"`
 }
 
 func (t *TruRouteResponse) isResponse() bool {
-	return t.Ussd.Type == TRUROUTE_RESPONSE
+	return t.Type == TRUROUTE_RESPONSE
 }
 
 func (t *TruRouteResponse) isRelease() bool {
-	return t.Ussd.Type == TRUROUTE_RELEASE
+	return t.Type == TRUROUTE_RELEASE
 }
 
 func (t *TruRouteResponse) GetText() string {
-	return t.Ussd.Message
+	return t.Message
 }
 
 /// Executes a step and returns the result of the request
 /// May return an empty string ("") upon failure
-func (s *Step) executeAsTruRouteRequest(session *Session) (string, error) {
+func (s *Step) ExecuteAsTruRouteRequest(session *Session) (string, error) {
 	var text = s.Text
 	if &text == nil {
 		return "", errors.New("Input Text cannot be nil")
@@ -63,18 +61,21 @@ func (s *Step) executeAsTruRouteRequest(session *Session) (string, error) {
 
 	req := &TruRouteRequest{}
 
-	req.Ussd.Type = TRUROUTE_RESPONSE
+	req.Type = TRUROUTE_RESPONSE
+	req.Message = text
+	req.Session = session.ID
+	req.Msisdn = session.PhoneNumber
+
 	if s.isDial {
-		req.Ussd.Type = TRUROUTE_REQUEST
+		req.Type = TRUROUTE_INITIAL
+		req.Message = "0"
 	}
-	req.Ussd.Message = text
-	req.Ussd.Session = session.ID
-	req.Ussd.Msisdn = session.PhoneNumber
 
 	marshalledXml, err := xml.Marshal(req)
+
 	res, err := session.client.Post(session.url, "text/xml", bytes.NewReader(marshalledXml))
-	if err != nil {
-		log.Printf("Failed to send request to %s", session.url)
+	if err != nil || res.StatusCode != 200 {
+		log.Printf("Failed to send request %s to %s", marshalledXml, session.url)
 		return "", err
 	}
 
