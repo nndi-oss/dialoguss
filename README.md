@@ -1,4 +1,4 @@
-DialogUSS
+Dialoguss
 =========
 
 ![logo](./logo-small.png)
