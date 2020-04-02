@@ -18,11 +18,12 @@ import (
 )
 
 var (
-	interactive  bool
-	file         string
-	trurouteMode bool
-	reUssdCon    = regexp.MustCompile(`^CON\s?`)
-	reUssdEnd    = regexp.MustCompile(`^END\s?`)
+	interactive    bool
+	file           string
+	trurouteMode   bool
+	reUssdCon      = regexp.MustCompile(`^CON\s?`)
+	reUssdEnd      = regexp.MustCompile(`^END\s?`)
+	defaultTimeout = 21 * time.Second
 )
 
 const (
@@ -193,6 +194,14 @@ func prompt() string {
 	return s
 }
 
+// promptCh writes users input into a channel
+func promptCh(ch chan string) {
+	var value string
+	fmt.Print("Enter value> ")
+	fmt.Scanln(&value)
+	ch <- value
+}
+
 func (s *Session) RunInteractive() error {
 	var input, output string
 	var err error
@@ -219,8 +228,21 @@ func (s *Session) RunInteractive() error {
 	}
 	fmt.Println(output)
 	// Execute other steps if we haven't received an "END" response
+sessionLoop:
 	for i := 0; !step.isLast; i++ {
-		input = prompt()
+		inputCh := make(chan string, 1)
+
+		// Read the input or timeout after a few seconds (currently 21)
+		go promptCh(inputCh)
+
+		select {
+		case value := <-inputCh:
+			input = value
+		case <-time.After(defaultTimeout):
+			fmt.Println("Session timed out!")
+			break sessionLoop
+		}
+
 		step = NewStep(i, input, "")
 		output, err = step.Execute(s)
 		if err != nil {
