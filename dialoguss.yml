@@ -18,7 +18,7 @@ sessions:
       # The first step is the response after dialing the ussd code
       - expect: "What is your name?"
       - text: "Zikani"
-        expect: |
+        expect: |-
           Welcome, Zikani
           Choose an item:
           1. Account detail
@@ -33,7 +33,7 @@ sessions:
     steps:
       - expect: "What is your name?"
       - text: "John"
-        expect: |
+        expect: |-
           Welcome, John
           Choose an item:
           1. Account detail

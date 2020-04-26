@@ -1,11 +1,13 @@
 Dialoguss
 =========
 
-![logo](./logo-small.png)
+<p align="center">
+  <img src="logo-small.png" />
+</p>
 
 `dialoguss` is a cli tool to test USSD applications that are implemented
-as HTTP services (particularly those implemented on [AfricasTalking's](https://africastalking.com/) 
-service or similar).
+as HTTP services - particularly those implemented on [AfricasTalking's](https://africastalking.com/) 
+service or similar or using [ussd-adapter](https://github.com/saulchelewani/ussd-adapter)
 
 `dialoguss` is useful for testing your USSD applications during development.
 
@@ -69,7 +71,7 @@ sessions:
       # The first step is the response after dialing the ussd code
       - expect: "What is your name?"
       - text: "Zikani"
-        expect: |
+        expect: |-
           Welcome, Zikani
           Choose an item:
           1. Account detail
