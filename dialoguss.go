@@ -49,7 +49,7 @@ type Step struct {
 	StepNo int
 	isLast bool
 	isDial bool
-	Text   string `yaml:"text"`
+	Text   string `yaml:"userInput"`
 	Expect string `yaml:"expect"`
 }
 

@@ -1,6 +1,6 @@
 # See LICENSE
 # 
-# NNDI, 2018
+# NNDI, 2018 - 2020
 #
 # This is a sample and test file for `dialoguss`
 # 
@@ -17,7 +17,7 @@ sessions:
     steps:
       # The first step is the response after dialing the ussd code
       - expect: "What is your name?"
-      - text: "Zikani"
+      - userInput: "Zikani"
         expect: |-
           Welcome, Zikani
           Choose an item:
@@ -25,14 +25,14 @@ sessions:
           2. Balance
           3. Something else
           # Exit
-      - text: "2" 
+      - userInput: "2" 
         expect: "Your balance is: MK 500"
   - id: 123456789100000
     phoneNumber: 265888123456
     description: "Should return account is inactive for John"
     steps:
       - expect: "What is your name?"
-      - text: "John"
+      - userInput: "John"
         expect: |-
           Welcome, John
           Choose an item:
@@ -40,5 +40,5 @@ sessions:
           2. Balance
           3. Something else
           # Exit
-      - text: "1" 
+      - userInput: "1" 
         expect: "Your account is inactive"
