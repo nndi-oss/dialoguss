@@ -6,8 +6,10 @@ Dialoguss
 </p>
 
 `dialoguss` is a cli tool to test USSD applications that are implemented
-as HTTP services - particularly those implemented on [AfricasTalking's](https://africastalking.com/) 
-service or similar or using [ussd-adapter](https://github.com/saulchelewani/ussd-adapter)
+as HTTP services - particularly those implemented via:
+
+* [AfricasTalking's](https://africastalking.com/) service or 
+* Using [ussd-adapter](https://github.com/saulchelewani/ussd-adapter)
 
 `dialoguss` is useful for testing your USSD applications during development.
 
@@ -70,7 +72,7 @@ sessions:
     steps:
       # The first step is the response after dialing the ussd code
       - expect: "What is your name?"
-      - text: "Zikani"
+      - userInput: "Zikani"
         expect: |-
           Welcome, Zikani
           Choose an item:
@@ -78,7 +80,7 @@ sessions:
           2. Balance
           3. Something else
           # Exit
-      - text: "2" 
+      - userInput: "2" 
         expect: "Your balance is: MK 500"
 ```
 
