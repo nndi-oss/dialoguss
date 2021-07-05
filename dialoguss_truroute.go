@@ -9,9 +9,9 @@ import (
 )
 
 const (
-	TRUROUTE_INITIAL  = 1
-	TRUROUTE_RESPONSE = 2
-	TRUROUTE_RELEASE  = 3
+	TrurouteCodeInitial  = 1
+	TrurouteCodeResponse = 2
+	TrurouteCodeRelease  = 3
 )
 
 // TruRouteRequest XML struct for the request from a truroute services
@@ -40,11 +40,11 @@ type TruRouteResponse struct {
 }
 
 func (t *TruRouteResponse) isResponse() bool {
-	return t.Type == TRUROUTE_RESPONSE
+	return t.Type == TrurouteCodeResponse
 }
 
 func (t *TruRouteResponse) isRelease() bool {
-	return t.Type == TRUROUTE_RELEASE
+	return t.Type == TrurouteCodeRelease
 }
 
 func (t *TruRouteResponse) GetText() string {
@@ -61,13 +61,13 @@ func (s *Step) ExecuteAsTruRouteRequest(session *Session) (string, error) {
 
 	req := &TruRouteRequest{}
 
-	req.Type = TRUROUTE_RESPONSE
+	req.Type = TrurouteCodeResponse
 	req.Message = text
 	req.Session = session.ID
 	req.Msisdn = session.PhoneNumber
 
 	if s.isDial {
-		req.Type = TRUROUTE_INITIAL
+		req.Type = TrurouteCodeInitial
 		req.Message = "0"
 	}
 

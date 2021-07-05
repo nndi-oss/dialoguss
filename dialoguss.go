@@ -27,9 +27,9 @@ var (
 )
 
 const (
-	API_TYPE_AFRICASTALKING   = "AT_USSD"
-	API_TYPE_TRUROUTE         = "TR_USSD"
-	INTERACTIVE_DIAL_TEMPLATE = `Dialing app using:
+	ApiTypeAfricastalking   = "AT_USSD"
+	ApiTypeTruroute         = "TR_USSD"
+	InteractiveDialTemplate = `Dialing app using:
 
 	Phone: %s
 	Url: %s
@@ -150,9 +150,9 @@ func (s *Session) AddStep(step *Step) {
 
 func NewInteractiveSession(d DialogussConfig) *Session {
 	rand.Seed(time.Now().UnixNano())
-	apiType := API_TYPE_AFRICASTALKING
+	apiType := ApiTypeAfricastalking
 	if trurouteMode {
-		apiType = API_TYPE_TRUROUTE
+		apiType = ApiTypeTruroute
 	}
 	return &Session{
 		ID:          fmt.Sprintf("DialogussSession__%d", rand.Uint64()),
@@ -215,7 +215,7 @@ func (s *Session) RunInteractive() error {
 		apiTypeName = "TNM TruRoute USSD"
 	}
 
-	fmt.Printf(INTERACTIVE_DIAL_TEMPLATE,
+	fmt.Printf(InteractiveDialTemplate,
 		s.PhoneNumber,
 		s.url,
 		s.ID,
@@ -284,9 +284,9 @@ func (d *Dialoguss) RunAutomatedSessions() error {
 
 	sessionErrors := make(map[string]error)
 
-	apiType := API_TYPE_AFRICASTALKING
+	apiType := ApiTypeAfricastalking
 	if trurouteMode {
-		apiType = API_TYPE_TRUROUTE
+		apiType = ApiTypeTruroute
 	}
 
 	for _, session := range d.config.Sessions {
