@@ -1,4 +1,4 @@
-module bitbucket.org/nndi/dialoguss
+module github.com/nndi-oss/dialoguss
 
 require (
 	bitbucket.org/nndi/phada v0.0.0-20181002212518-07295a92ef22
