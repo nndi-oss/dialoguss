@@ -1,9 +1,0 @@
-{
-  "name": "dialoguss",
-  "description": "CLI tool for testing HTTP based USSD applications ",
-  "repository": "https://github.com/nndi-oss/dialoguss",
-  "website": "https://github.com/nndi-oss/dialoguss",
-  "logo": "",
-  "keywords": ["http", "ussd", "Africastalking", "testing", "integration", "python", "flask"],
-  "addons": ""
-}
