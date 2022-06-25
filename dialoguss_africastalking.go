@@ -20,6 +20,7 @@ func (s *Step) ExecuteAsAfricasTalking(session *Session) (string, error) {
 	data := url.Values{}
 	data.Set("sessionId", session.ID)
 	data.Set("phoneNumber", session.PhoneNumber)
+	data.Set("serviceCode", session.serviceCode)
 	var text = s.Text
 	if &text == nil {
 		return "", errors.New("Input Text cannot be nil")
