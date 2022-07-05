@@ -88,6 +88,7 @@ type Session struct {
 	PhoneNumber string  `yaml:"phoneNumber"`
 	Description string  `yaml:"description"`
 	Steps       []*Step `yaml:"steps"`
+	serviceCode string
 	url         string
 	client      *http.Client
 	ApiType     string
@@ -116,6 +117,7 @@ func NewInteractiveSession(d DialogussConfig) *Session {
 		PhoneNumber: d.PhoneNumber,
 		Description: "Interactive Session",
 		Steps:       nil,
+		serviceCode: d.Dial,
 		url:         d.URL,
 		client:      &http.Client{},
 		ApiType:     apiType,
