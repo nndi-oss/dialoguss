@@ -92,6 +92,7 @@ type Session struct {
 	url         string
 	client      *http.Client
 	ApiType     string
+	Timeout     time.Duration
 }
 
 type DialogussConfig struct {
@@ -99,6 +100,7 @@ type DialogussConfig struct {
 	Dial        string    `yaml:"dial"`
 	PhoneNumber string    `yaml:"phoneNumber"`
 	Sessions    []Session `yaml:"sessions"`
+	Timeout     int       `yaml:"timeout"`
 }
 
 /// AddStep adds step to session
@@ -112,6 +114,10 @@ func NewInteractiveSession(d DialogussConfig) *Session {
 	if trurouteMode {
 		apiType = ApiTypeTruroute
 	}
+	var sessionTimeout = defaultTimeout
+	if d.Timeout > 0 {
+		sessionTimeout = time.Duration(d.Timeout) * time.Second
+	}
 	return &Session{
 		ID:          fmt.Sprintf("DialogussSession__%d", rand.Uint64()),
 		PhoneNumber: d.PhoneNumber,
@@ -121,6 +127,7 @@ func NewInteractiveSession(d DialogussConfig) *Session {
 		url:         d.URL,
 		client:      &http.Client{},
 		ApiType:     apiType,
+		Timeout:     sessionTimeout,
 	}
 }
 
@@ -197,7 +204,7 @@ sessionLoop:
 		select {
 		case value := <-inputCh:
 			input = value
-		case <-time.After(defaultTimeout):
+		case <-time.After(s.Timeout):
 			fmt.Println("Session timed out!")
 			break sessionLoop
 		}
@@ -227,7 +234,7 @@ type Dialoguss struct {
 
 /// LoadConfig loads configuration from YAML
 func (d *Dialoguss) LoadConfig() error {
-	d.config = DialogussConfig{}
+	d.config = DialogussConfig{Timeout: int(defaultTimeout)}
 	b, err := ioutil.ReadFile(d.file)
 	if err != nil {
 		return err
