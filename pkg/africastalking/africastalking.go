@@ -1,4 +1,4 @@
-package main
+package africastalking
 
 import (
 	"errors"
@@ -7,7 +7,13 @@ import (
 	"net/url"
 	"regexp"
 	"strings"
+
+	"github.com/nndi-oss/dialoguss/pkg/core"
 )
+
+type AfricasTalkingRouteStep struct {
+	*core.Step
+}
 
 var (
 	reUssdCon = regexp.MustCompile(`^CON\s?`)
@@ -16,11 +22,11 @@ var (
 
 /// Executes a step as an AfricasTalking API request
 /// May return an empty string ("") upon failure
-func (s *Step) ExecuteAsAfricasTalking(session *Session) (string, error) {
+func (s *AfricasTalkingRouteStep) ExecuteAsAfricasTalking(session *core.Session) (string, error) {
 	data := url.Values{}
 	data.Set("sessionId", session.ID)
 	data.Set("phoneNumber", session.PhoneNumber)
-	data.Set("serviceCode", session.serviceCode)
+	data.Set("serviceCode", session.ServiceCode)
 	var text = s.Text
 	if &text == nil {
 		return "", errors.New("Input Text cannot be nil")
@@ -28,9 +34,9 @@ func (s *Step) ExecuteAsAfricasTalking(session *Session) (string, error) {
 	data.Set("text", text)  // TODO(zikani): concat the input
 	data.Set("channel", "") // TODO: Get the channel
 
-	res, err := session.client.PostForm(session.url, data)
+	res, err := session.Client.PostForm(session.Url, data)
 	if err != nil {
-		log.Printf("Failed to send request to %s", session.url)
+		log.Printf("Failed to send request to %s", session.Url)
 		return "", err
 	}
 
@@ -43,10 +49,10 @@ func (s *Step) ExecuteAsAfricasTalking(session *Session) (string, error) {
 	responseText := string(b)
 	if reUssdCon.MatchString(responseText) {
 		responseText = strings.Replace(responseText, "CON ", "", 1)
-		s.isLast = false
+		s.IsLast = false
 	} else if reUssdEnd.MatchString(responseText) {
 		responseText = strings.Replace(responseText, "END ", "", 1)
-		s.isLast = true
+		s.IsLast = true
 	}
 
 	return responseText, nil

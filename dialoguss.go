@@ -10,6 +10,9 @@ import (
 	"sync"
 	"time"
 
+	"github.com/nndi-oss/dialoguss/pkg/africastalking"
+	"github.com/nndi-oss/dialoguss/pkg/core"
+	"github.com/nndi-oss/dialoguss/pkg/trueroute"
 	"gopkg.in/yaml.v2"
 )
 
@@ -32,6 +35,8 @@ const (
 `
 )
 
+type Dialoguss core.Dialoguss
+
 /// UnexpectedResultError
 ///
 /// Unexpected result from the USSD application
@@ -39,22 +44,14 @@ func UnexpectedResultError(want string, have string) error {
 	return fmt.Errorf("Unexpected result.\n\tWant: %s\n\tHave: %s", want, have)
 }
 
-type Step struct {
-	StepNo int
-	isLast bool
-	isDial bool
-	Text   string `yaml:"userInput"`
-	Expect string `yaml:"expect"`
-}
-
 /// DialStep
 ///
 /// DialStep is the first step in the session, dials the USSD service
-func DialStep(expect string) *Step {
-	return &Step{
+func DialStep(expect string) *core.Step {
+	return &core.Step{
 		StepNo: 0,
-		isLast: false,
-		isDial: true,
+		IsLast: false,
+		IsDial: true,
 		Text:   "",
 		Expect: expect,
 	}
@@ -63,11 +60,11 @@ func DialStep(expect string) *Step {
 /// NewStep
 ///
 /// a subsequent step in the session to the USSD service
-func NewStep(i int, text string, expect string) *Step {
-	return &Step{
+func NewStep(i int, text string, expect string) *core.Step {
+	return &core.Step{
 		StepNo: i,
-		isLast: false,
-		isDial: false,
+		IsLast: false,
+		IsDial: false,
 		Text:   text,
 		Expect: expect,
 	}
@@ -75,40 +72,22 @@ func NewStep(i int, text string, expect string) *Step {
 
 /// Executes a step and returns the result of the request
 /// May return an empty string ("") upon failure
-func (s *Step) Execute(session *Session) (string, error) {
+func Execute(s *core.Step, session *core.Session) (string, error) {
 	if trurouteMode {
-		return s.ExecuteAsTruRouteRequest(session)
+		step := trueroute.TrueRouteStep{Step: s}
+		return step.ExecuteAsTruRouteRequest(session)
 	}
 
-	return s.ExecuteAsAfricasTalking(session)
-}
-
-type Session struct {
-	ID          string  `yaml:"id"`
-	PhoneNumber string  `yaml:"phoneNumber"`
-	Description string  `yaml:"description"`
-	Steps       []*Step `yaml:"steps"`
-	serviceCode string
-	url         string
-	client      *http.Client
-	ApiType     string
-	Timeout     time.Duration
-}
-
-type DialogussConfig struct {
-	URL         string    `yaml:"url"`
-	Dial        string    `yaml:"dial"`
-	PhoneNumber string    `yaml:"phoneNumber"`
-	Sessions    []Session `yaml:"sessions"`
-	Timeout     int       `yaml:"timeout"`
+	step := africastalking.AfricasTalkingRouteStep{Step: s}
+	return step.ExecuteAsAfricasTalking(session)
 }
 
 /// AddStep adds step to session
-func (s *Session) AddStep(step *Step) {
+func AddStep(s *core.Session, step *core.Step) {
 	s.Steps = append(s.Steps, step)
 }
 
-func NewInteractiveSession(d DialogussConfig) *Session {
+func NewInteractiveSession(d core.DialogussConfig) *core.Session {
 	rand.Seed(time.Now().UnixNano())
 	apiType := ApiTypeAfricastalking
 	if trurouteMode {
@@ -118,29 +97,29 @@ func NewInteractiveSession(d DialogussConfig) *Session {
 	if d.Timeout > 0 {
 		sessionTimeout = time.Duration(d.Timeout) * time.Second
 	}
-	return &Session{
+	return &core.Session{
 		ID:          fmt.Sprintf("DialogussSession__%d", rand.Uint64()),
 		PhoneNumber: d.PhoneNumber,
 		Description: "Interactive Session",
 		Steps:       nil,
-		serviceCode: d.Dial,
-		url:         d.URL,
-		client:      &http.Client{},
+		ServiceCode: d.Dial,
+		Url:         d.URL,
+		Client:      &http.Client{},
 		ApiType:     apiType,
 		Timeout:     sessionTimeout,
 	}
 }
 
-func (s *Session) Run() error {
+func Run(s *core.Session) error {
 	first := true
 	for i, step := range s.Steps {
 		if first {
-			step.Execute(s)
+			Execute(step, s)
 			first = false
 			continue
 		}
 		step.StepNo = i
-		result, err := step.Execute(s)
+		result, err := Execute(step, s)
 		if err != nil {
 			log.Printf("Failed to execute step %d", step.StepNo)
 			return err
@@ -168,13 +147,13 @@ func promptCh(ch chan string) {
 	ch <- value
 }
 
-func (s *Session) RunInteractive() error {
+func RunInteractive(s *core.Session) error {
 	var input, output string
 	var err error
-	var step *Step
+	var step *core.Step
 	// First Step for the Session is to dial
 	step = DialStep("")
-	output, err = step.Execute(s)
+	output, err = Execute(step, s)
 
 	apiTypeName := "AfricasTalking USSD"
 	if trurouteMode {
@@ -183,7 +162,7 @@ func (s *Session) RunInteractive() error {
 
 	fmt.Printf(InteractiveDialTemplate,
 		s.PhoneNumber,
-		s.url,
+		s.Url,
 		s.ID,
 		apiTypeName,
 	)
@@ -195,7 +174,7 @@ func (s *Session) RunInteractive() error {
 	fmt.Println(output)
 	// Execute other steps if we haven't received an "END" response
 sessionLoop:
-	for i := 0; !step.isLast; i++ {
+	for i := 0; !step.IsLast; i++ {
 		inputCh := make(chan string, 1)
 
 		// Read the input or timeout after a few seconds (currently 21)
@@ -210,12 +189,12 @@ sessionLoop:
 		}
 
 		step = NewStep(i, input, "")
-		output, err = step.Execute(s)
+		output, err = Execute(step, s)
 		if err != nil {
 			return err
 		}
 		fmt.Println(output)
-		if step.isLast {
+		if step.IsLast {
 			break
 		}
 	}
@@ -223,30 +202,21 @@ sessionLoop:
 	return nil
 }
 
-/// Dialoguss
-///
-/// Dialoguss is an application that can have one or more pseudo-ussd sessions
-type Dialoguss struct {
-	isInteractive bool
-	file          string
-	config        DialogussConfig
-}
-
 /// LoadConfig loads configuration from YAML
 func (d *Dialoguss) LoadConfig() error {
-	d.config = DialogussConfig{Timeout: int(defaultTimeout)}
-	b, err := ioutil.ReadFile(d.file)
+	d.Config = core.DialogussConfig{Timeout: int(defaultTimeout)}
+	b, err := ioutil.ReadFile(d.File)
 	if err != nil {
 		return err
 	}
 
-	return yaml.Unmarshal(b, &d.config)
+	return yaml.Unmarshal(b, &d.Config)
 }
 
 /// Loads the sessions for this application
 func (d *Dialoguss) RunAutomatedSessions() error {
 	var wg sync.WaitGroup
-	wg.Add(len(d.config.Sessions))
+	wg.Add(len(d.Config.Sessions))
 
 	sessionErrors := make(map[string]error)
 
@@ -255,25 +225,25 @@ func (d *Dialoguss) RunAutomatedSessions() error {
 		apiType = ApiTypeTruroute
 	}
 
-	for _, session := range d.config.Sessions {
-		steps := make([]*Step, len(session.Steps))
+	for _, session := range d.Config.Sessions {
+		steps := make([]*core.Step, len(session.Steps))
 		copy(steps, session.Steps)
 
-		s := &Session{
+		s := &core.Session{
 			ID:          session.ID,
 			Description: session.Description,
 			PhoneNumber: session.PhoneNumber,
 			Steps:       steps,
-			url:         d.config.URL,
-			client:      &http.Client{},
+			Url:         d.Config.URL,
+			Client:      &http.Client{},
 			ApiType:     apiType,
 		}
 
-		s.client.Timeout = 10 * time.Second
+		s.Client.Timeout = 10 * time.Second
 
 		go func() {
 			defer wg.Done()
-			err := s.Run()
+			err := Run(s)
 			if err != nil {
 				//sessionErrors <-fmt.Sprintf("Error in Session %s. Got: %s ", s.ID, err)
 				sessionErrors[s.ID] = err
@@ -290,9 +260,9 @@ func (d *Dialoguss) RunAutomatedSessions() error {
 /// Run executes the sessions
 func (d *Dialoguss) Run() error {
 	// log.Print("Running dialoguss with config", d.config)
-	if d.isInteractive {
-		session := NewInteractiveSession(d.config)
-		return session.RunInteractive()
+	if d.IsInteractive {
+		session := NewInteractiveSession(d.Config)
+		return RunInteractive(session)
 	}
 
 	return d.RunAutomatedSessions()
@@ -307,8 +277,8 @@ func init() {
 func main() {
 	flag.Parse()
 	d := &Dialoguss{
-		isInteractive: interactive,
-		file:          file,
+		IsInteractive: interactive,
+		File:          file,
 	}
 
 	if err := d.LoadConfig(); err != nil {
