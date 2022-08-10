@@ -1,4 +1,4 @@
-package main
+package trueroute
 
 import (
 	"bytes"
@@ -6,7 +6,13 @@ import (
 	"errors"
 	"io/ioutil"
 	"log"
+
+	"github.com/nndi-oss/dialoguss/pkg/core"
 )
+
+type TrueRouteStep struct {
+	*core.Step
+}
 
 const (
 	TrurouteCodeInitial  = 1
@@ -53,7 +59,7 @@ func (t *TruRouteResponse) GetText() string {
 
 /// Executes a step and returns the result of the request
 /// May return an empty string ("") upon failure
-func (s *Step) ExecuteAsTruRouteRequest(session *Session) (string, error) {
+func (s *TrueRouteStep) ExecuteAsTruRouteRequest(session *core.Session) (string, error) {
 	var text = s.Text
 	if &text == nil {
 		return "", errors.New("Input Text cannot be nil")
@@ -66,16 +72,16 @@ func (s *Step) ExecuteAsTruRouteRequest(session *Session) (string, error) {
 	req.Session = session.ID
 	req.Msisdn = session.PhoneNumber
 
-	if s.isDial {
+	if s.IsDial {
 		req.Type = TrurouteCodeInitial
 		req.Message = "0"
 	}
 
 	marshalledXml, err := xml.Marshal(req)
 
-	res, err := session.client.Post(session.url, "text/xml", bytes.NewReader(marshalledXml))
+	res, err := session.Client.Post(session.Url, "text/xml", bytes.NewReader(marshalledXml))
 	if err != nil || res.StatusCode != 200 {
-		log.Printf("Failed to send request %s to %s", marshalledXml, session.url)
+		log.Printf("Failed to send request %s to %s", marshalledXml, session.Url)
 		return "", err
 	}
 
@@ -91,7 +97,7 @@ func (s *Step) ExecuteAsTruRouteRequest(session *Session) (string, error) {
 		return "", err
 	}
 
-	s.isLast = trurouteResponse.isRelease()
+	s.IsLast = trurouteResponse.isRelease()
 
 	return trurouteResponse.GetText(), nil
 }
