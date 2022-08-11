@@ -20,6 +20,6 @@ func TestNewStep(t *testing.T) {
 	assert.Equal(t, 0, newStep.StepNo)
 	assert.Equal(t, "input", newStep.Text)
 	assert.Equal(t, "expected", newStep.Expect)
-	assert.False(t, newStep.isDial)
-	assert.False(t, newStep.isLast)
+	assert.False(t, newStep.IsDial)
+	assert.False(t, newStep.IsLast)
 }
