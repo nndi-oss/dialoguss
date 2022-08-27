@@ -102,3 +102,10 @@ ENV/
 
 .vscode/
 dialoguss
+
+
+docs/themes
+docs/public
+docs/resources
+docs/*.zip
+docs/*.lock
