@@ -1,0 +1,5 @@
+docs
+.goreleaser.yml
+.gitignore
+LICENSE
+README.md
