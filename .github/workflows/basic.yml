@@ -17,9 +17,4 @@ jobs:
       - uses: actions/checkout@v2
       - name: run go mod
         run: go mod tidy && go build
-      - name: Run dblstd check
-        run: |
-          git clone https://github.com/sethbonnie/dblstd dblstd-src
-          cd dblstd-src
-          go build -o dblstd . && chmod +x ./dblstd
-          ./dblstd -s ../.dblstd .
+      - uses: zikani03/dblstd-action
