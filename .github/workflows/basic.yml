@@ -20,5 +20,6 @@ jobs:
       - name: Run dblstd check
         run: |
           git clone https://github.com/sethbonnie/dblstd dblstd-src
-          go build -o dblstd ./dblstd-src/main.go && chmod +x ./dblstd
-          dblstd -s .dblstd .
+          cd dblstd-src
+          go build -o dblstd . && chmod +x ./dblstd
+          dblstd -s ../.dblstd .
