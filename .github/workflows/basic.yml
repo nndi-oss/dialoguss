@@ -19,6 +19,6 @@ jobs:
         run: go mod tidy && go build
       - name: Run dblstd check
         run: |
-          git clone https://github.com/sethbonnie/dblstd dbstd-src
-          go build -o dbstld ./dblstd-src/main.go && chmod +x ./dblstd
+          git clone https://github.com/sethbonnie/dblstd dblstd-src
+          go build -o dblstd ./dblstd-src/main.go && chmod +x ./dblstd
           dblstd -s .dblstd .
