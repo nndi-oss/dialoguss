@@ -35,18 +35,15 @@ const (
 `
 )
 
+// Dialoguss the main type for interacting with dialoguss sessions
 type Dialoguss core.Dialoguss
 
-/// UnexpectedResultError
-///
-/// Unexpected result from the USSD application
+// UnexpectedResultError unexpected result from the USSD application
 func UnexpectedResultError(want string, have string) error {
 	return fmt.Errorf("Unexpected result.\n\tWant: %s\n\tHave: %s", want, have)
 }
 
-/// DialStep
-///
-/// DialStep is the first step in the session, dials the USSD service
+// DialStep is the first step in the session, dials the USSD service
 func DialStep(expect string) *core.Step {
 	return &core.Step{
 		StepNo: 0,
@@ -57,9 +54,7 @@ func DialStep(expect string) *core.Step {
 	}
 }
 
-/// NewStep
-///
-/// a subsequent step in the session to the USSD service
+// NewStep a subsequent step in the session to the USSD service
 func NewStep(i int, text string, expect string) *core.Step {
 	return &core.Step{
 		StepNo: i,
@@ -70,8 +65,7 @@ func NewStep(i int, text string, expect string) *core.Step {
 	}
 }
 
-/// Executes a step and returns the result of the request
-/// May return an empty string ("") upon failure
+// Execute executes a step and returns the result of the request may return an empty string ("") upon failure
 func Execute(s *core.Step, session *core.Session) (string, error) {
 	if trurouteMode {
 		step := trueroute.TrueRouteStep{Step: s}
@@ -82,11 +76,12 @@ func Execute(s *core.Step, session *core.Session) (string, error) {
 	return step.ExecuteAsAfricasTalking(session)
 }
 
-/// AddStep adds step to session
+// AddStep adds step to session
 func AddStep(s *core.Session, step *core.Step) {
 	s.Steps = append(s.Steps, step)
 }
 
+// NewInteractiveSession creates a new interactive session that should be run using RunInteractive
 func NewInteractiveSession(d core.DialogussConfig) *core.Session {
 	rand.Seed(time.Now().UnixNano())
 	apiType := ApiTypeAfricastalking
@@ -110,6 +105,7 @@ func NewInteractiveSession(d core.DialogussConfig) *core.Session {
 	}
 }
 
+// Run runs the dialoguss session and executes the steps in each session
 func Run(s *core.Session) error {
 	first := true
 	for i, step := range s.Steps {
@@ -147,6 +143,7 @@ func promptCh(ch chan string) {
 	ch <- value
 }
 
+// RunInteractive runs and interactive session that prompts ufor user input
 func RunInteractive(s *core.Session) error {
 	var input, output string
 	var err error
@@ -202,7 +199,7 @@ sessionLoop:
 	return nil
 }
 
-/// LoadConfig loads configuration from YAML
+// LoadConfig loads configuration from YAML
 func (d *Dialoguss) LoadConfig() error {
 	d.Config = core.DialogussConfig{Timeout: int(defaultTimeout)}
 	b, err := ioutil.ReadFile(d.File)
@@ -213,7 +210,7 @@ func (d *Dialoguss) LoadConfig() error {
 	return yaml.Unmarshal(b, &d.Config)
 }
 
-/// Loads the sessions for this application
+// RunAutomatedSessions Loads the sessions for this application
 func (d *Dialoguss) RunAutomatedSessions() error {
 	var wg sync.WaitGroup
 	wg.Add(len(d.Config.Sessions))
@@ -257,7 +254,7 @@ func (d *Dialoguss) RunAutomatedSessions() error {
 	return nil
 }
 
-/// Run executes the sessions
+// Run executes the sessions
 func (d *Dialoguss) Run() error {
 	// log.Print("Running dialoguss with config", d.config)
 	if d.IsInteractive {

@@ -45,6 +45,7 @@ type TruRouteResponse struct {
 	Msisdn string `xml:"msisdn"`
 }
 
+// isResponse checks if the response is truly a success
 func (t *TruRouteResponse) isResponse() bool {
 	return t.Type == TrurouteCodeResponse
 }
@@ -53,16 +54,17 @@ func (t *TruRouteResponse) isRelease() bool {
 	return t.Type == TrurouteCodeRelease
 }
 
+// GetText returns the response text
 func (t *TruRouteResponse) GetText() string {
 	return t.Message
 }
 
-/// Executes a step and returns the result of the request
+/// ExecuteAsTruRouteRequest executes a step and returns the result of the request
 /// May return an empty string ("") upon failure
 func (s *TrueRouteStep) ExecuteAsTruRouteRequest(session *core.Session) (string, error) {
 	var text = s.Text
 	if &text == nil {
-		return "", errors.New("Input Text cannot be nil")
+		return "", errors.New("input Text cannot be nil")
 	}
 
 	req := &TruRouteRequest{}
