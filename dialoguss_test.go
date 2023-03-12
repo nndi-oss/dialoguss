@@ -3,11 +3,13 @@ package main
 import (
 	"testing"
 
+	"github.com/nndi-oss/dialoguss/cmd"
+
 	"github.com/stretchr/testify/assert"
 )
 
 func TestDialStep(t *testing.T) {
-	dialStep := DialStep("expected")
+	dialStep := cmd.DialStep("expected")
 
 	assert.NotNil(t, dialStep, "DialStep should return non nil")
 	assert.Equal(t, "", dialStep.Text)
@@ -15,7 +17,7 @@ func TestDialStep(t *testing.T) {
 }
 
 func TestNewStep(t *testing.T) {
-	newStep := NewStep(0, "input", "expected")
+	newStep := cmd.NewStep(0, "input", "expected")
 
 	assert.Equal(t, 0, newStep.StepNo)
 	assert.Equal(t, "input", newStep.Text)
