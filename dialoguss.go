@@ -88,7 +88,7 @@ func NewInteractiveSession(d core.DialogussConfig) *core.Session {
 	if trurouteMode {
 		apiType = ApiTypeTruroute
 	}
-	var sessionTimeout = defaultTimeout
+	sessionTimeout := defaultTimeout
 	if d.Timeout > 0 {
 		sessionTimeout = time.Duration(d.Timeout) * time.Second
 	}
@@ -242,7 +242,7 @@ func (d *Dialoguss) RunAutomatedSessions() error {
 			defer wg.Done()
 			err := Run(s)
 			if err != nil {
-				//sessionErrors <-fmt.Sprintf("Error in Session %s. Got: %s ", s.ID, err)
+				// sessionErrors <-fmt.Sprintf("Error in Session %s. Got: %s ", s.ID, err)
 				sessionErrors[s.ID] = err
 			}
 		}()

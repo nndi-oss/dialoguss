@@ -5,15 +5,12 @@ import (
 	"time"
 )
 
-/// Dialoguss
-///
-/// Dialoguss is an application that can have one or more pseudo-ussd sessions
+// Dialoguss is an application that can have one or more pseudo-ussd sessions
 type Dialoguss struct {
 	IsInteractive bool
 	File          string
 	Config        DialogussConfig
 }
-
 
 type Step struct {
 	StepNo int

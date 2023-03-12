@@ -20,14 +20,14 @@ var (
 	reUssdEnd = regexp.MustCompile(`^END\s?`)
 )
 
-/// Executes a step as an AfricasTalking API request
-/// May return an empty string ("") upon failure
+// ExecuteAsAfricasTalking Executes a step as an AfricasTalking API request
+// May return an empty string ("") upon failure
 func (s *AfricasTalkingRouteStep) ExecuteAsAfricasTalking(session *core.Session) (string, error) {
 	data := url.Values{}
 	data.Set("sessionId", session.ID)
 	data.Set("phoneNumber", session.PhoneNumber)
 	data.Set("serviceCode", session.ServiceCode)
-	var text = s.Text
+	text := s.Text
 	if &text == nil {
 		return "", errors.New("Input Text cannot be nil")
 	}

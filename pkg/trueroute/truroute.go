@@ -46,11 +46,11 @@ type TruRouteResponse struct {
 }
 
 // isResponse checks if the response is truly a success
-func (t *TruRouteResponse) isResponse() bool {
+func (t *TruRouteResponse) IsResponse() bool {
 	return t.Type == TrurouteCodeResponse
 }
 
-func (t *TruRouteResponse) isRelease() bool {
+func (t *TruRouteResponse) IsRelease() bool {
 	return t.Type == TrurouteCodeRelease
 }
 
@@ -59,11 +59,11 @@ func (t *TruRouteResponse) GetText() string {
 	return t.Message
 }
 
-/// ExecuteAsTruRouteRequest executes a step and returns the result of the request
-/// May return an empty string ("") upon failure
+// ExecuteAsTruRouteRequest executes a step and returns the result of the request
+// May return an empty string ("") upon failure
 func (s *TrueRouteStep) ExecuteAsTruRouteRequest(session *core.Session) (string, error) {
-	var text = s.Text
-	if &text == nil {
+	text := s.Text
+	if text == "" {
 		return "", errors.New("input Text cannot be nil")
 	}
 
@@ -80,6 +80,10 @@ func (s *TrueRouteStep) ExecuteAsTruRouteRequest(session *core.Session) (string,
 	}
 
 	marshalledXml, err := xml.Marshal(req)
+	if err != nil {
+		log.Printf("Failed to marshal XML request %v", req)
+		return "", err
+	}
 
 	res, err := session.Client.Post(session.Url, "text/xml", bytes.NewReader(marshalledXml))
 	if err != nil || res.StatusCode != 200 {
@@ -99,7 +103,7 @@ func (s *TrueRouteStep) ExecuteAsTruRouteRequest(session *core.Session) (string,
 		return "", err
 	}
 
-	s.IsLast = trurouteResponse.isRelease()
+	s.IsLast = trurouteResponse.IsRelease()
 
 	return trurouteResponse.GetText(), nil
 }
