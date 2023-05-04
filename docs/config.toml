@@ -1,59 +1,152 @@
 baseURL = "https://nndi.cloud/oss/dialoguss/"
 languageCode = "en-us"
-title = "Hugo Whisper Theme"
-themesDir = "./themes/"
-theme = "hugo-whisper-theme"
+title = "Dialoguss"
+description = "Dialoguss is a CLI tool for testing HTTP-based USSD applications"
+themesDir = "./themes"
+theme = "hugo-ridgeway"
 
+Paginate = 20
 pygmentsCodeFences = true
 pygmentsCodefencesGuessSyntax = true
-pygmentsUseClasses = true
+  
+[[menu.main]]
+    name = "Docs"
+    weight = 1
+    url = "/docs/"
+
+[[menu.main]]
+    name = "GitHub"
+    weight = 2
+    url = "https://github.com/nndi-oss/dialoguss"
 
 
+[[menu.footer]]
+    name = "Getting Started"
+    weight = -900
+    url = "/docs/getting-started"
+[[menu.footer]]
+    name = "Greypot Studio"
+    weight = -800
+    url = "/docs/studio-ui"
+[[menu.footer]]
+    name = "API Documentation"
+    weight = -700
+    url = "/openapi"
+[[menu.main]]
+    name = "Docs"
+    weight = -200
+    url = "/docs/"
+[[menu.footer]]
+    name = "GitHub"
+    weight = -200
+    url = "https://github.com/nndi-oss/greypot"
 
-[module]
-  [module.hugoVersion]
-    extended = true
-    min = "0.55.0"
+[Params]
+  RSSLink = "/index.xml"
+  author = "NNDI Ltd" # add your company name
+  github = "nndi-oss" # add your github profile name
+  twitter = "nndi_tech" # add your twitter profile
+  email = "hello@nndi.cloud"
+
+  iconSet = [ "primeicons", "ionicons" ]
+  primevueTheme = "saga-purple"
+
+  cover_image = "https://images.pexels.com/photos/5935791/pexels-photo-5935791.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=3"
+  cta_description = """
+  `dialoguss` is a cli tool to test USSD applications'
+  """
+  
+  cta_getting_started = "docs/automated"
+  cta_documentation = "docs"
+
+
+  # [params.homepage_meta_tags]
+  #   meta_description = "dialoguss is a cli tool to test USSD applications."
+  #   meta_og_title = "Dialoguss by NNDI"
+  #   meta_og_type = "website"
+  #   meta_og_url = "https://nndi.cloud/oss/dialoguss/"
+  #   meta_og_image = "https://raw.githubusercontent.com/JugglerX/hugo-whisper-theme/master/images/tn.png"
+  #   meta_og_description = "dialoguss is a cli tool to test USSD applications."
+  #   meta_twitter_card = "summary"
+  #   meta_twitter_site = "@nndi_tech"
+  #   meta_twitter_creator = "@nndi_tech"
+
+[Params.features]
+enabled = true
+
+[[Params.features.entries]]
+icon = "ti ti-terminal"
+title = "Command-line tool"
+description = """
+Test your USSD applications from the command-line as you develop and in test environments.
+"""
+
+[[Params.features.entries]]
+icon = "ti ti-broadcast"
+title = "Support for Africastalking, TNM USSD"
+description = """
+Dialoguss supports Africastalking and TNM USSD Applications out of the box
+"""
+
+[[Params.features.entries]]
+icon = "ti ti-ship"
+title = "Ship USSD Applications Confidently"
+description = """
+Ship your USSD applications faster and confidently after testing the steps with dialoguss
+"""
+
+[[Params.features.entries]]
+icon = "ti ti-free-rights"
+title = "Open Source"
+description = """
+Greypot is Open Source under the Apache License v2.0. You are free to use it and embed it in your projects whether hobby or commercial
+"""
+
+
+[Params.testimonials]
+enabled = false
+
+[[Params.testimonials.entries]]
+icon = ""
+logoURL = ""
+name = "Zikani Nyirenda Mwase"
+company = "NNDI Ltd"
+description = """
+Greypot helped us to speed up development of PDF reports and outputs that would have otherwise taken significant man-hours
+"""
+
+[[Params.testimonials.entries]]
+icon = ""
+logoURL = ""
+name = "XXXX"
+company = "XXXX"
+description = """
+Greypot helped with ...
+"""
+
+[[Params.testimonials.entries]]
+icon = ""
+logoURL = ""
+name = "XXXX"
+company = "XXXX"
+description = """
+Greypot helped with ...
+"""
+
+[[Params.testimonials.entries]]
+icon = ""
+logoURL = ""
+name = "XXXX"
+company = "XXXX"
+description = """
+Greypot helped with ...
+"""
+
+# [module]
+#   [module.hugoVersion]
+#     extended = true
+#     min = "0.55.0"
 
 # Controls how many words are printed in the content summary on the docs homepage.
 # See https://gohugo.io/content-management/summaries/
-summaryLength = 30
-
-[[menu.main]]
-    name = "Home"
-    url = "/"
-    weight = 1
-
-[[menu.main]]
-    name = "Docs"
-    url = "/docs/"
-    weight = 2
-
-[params]
-  google_analytics_id=""
-  homepage_button_link = '/docs'
-  homepage_button_text = 'Read The Docs'
-  homepage_intro = '`dialoguss` is a cli tool to test USSD applications'
-  homepage_image = ''
-
-  ## You can enable to add anchor links to header elements
-  # enable_anchor_link = true
-
-  [params.homepage_meta_tags]
-    meta_description = "dialoguss is a cli tool to test USSD applications."
-    meta_og_title = "Dialoguss by NNDI"
-    meta_og_type = "website"
-    meta_og_url = "https://nndi.cloud/oss/dialoguss/"
-    meta_og_image = "https://raw.githubusercontent.com/JugglerX/hugo-whisper-theme/master/images/tn.png"
-    meta_og_description = "dialoguss is a cli tool to test USSD applications."
-    meta_twitter_card = "summary"
-    meta_twitter_site = "@nndi_tech"
-    meta_twitter_creator = "@nndi_tech"
-
-  [params.logo]
-      mobile = "/img/logo-mobile.svg"
-      standard  = "/img/logo.svg"
-
-  [params.maintainer]
-    name = "NNDI"
-    homepage = "https://nndi.cloud/oss/"
+# summaryLength = 30
