@@ -2,7 +2,8 @@ baseURL = "https://nndi.cloud/oss/dialoguss/"
 languageCode = "en-us"
 title = "Dialoguss"
 description = "Dialoguss is a CLI tool for testing HTTP-based USSD applications"
-themesDir = "./themes"
+themesDir = "../../"
+# themesDir = "./themes"
 theme = "hugo-ridgeway"
 
 Paginate = 20
@@ -25,21 +26,13 @@ pygmentsCodefencesGuessSyntax = true
     weight = -900
     url = "/docs/getting-started"
 [[menu.footer]]
-    name = "Greypot Studio"
-    weight = -800
-    url = "/docs/studio-ui"
-[[menu.footer]]
-    name = "API Documentation"
+    name = "Godoc"
     weight = -700
-    url = "/openapi"
-[[menu.main]]
-    name = "Docs"
-    weight = -200
-    url = "/docs/"
+    url = "https://pkg.go.dev/github.com/nndi-oss/dialoguss"
 [[menu.footer]]
-    name = "GitHub"
+    name = "More open source by NNDI"
     weight = -200
-    url = "https://github.com/nndi-oss/greypot"
+    url = "https://github.com/nndi-oss"
 
 [Params]
   RSSLink = "/index.xml"

@@ -103,7 +103,7 @@ ENV/
 .vscode/
 dialoguss
 
-
+.DS_Store
 docs/themes
 docs/public
 docs/resources
