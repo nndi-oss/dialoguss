@@ -92,7 +92,7 @@ Ship your USSD applications faster and confidently after testing the steps with 
 icon = "ti ti-free-rights"
 title = "Open Source"
 description = """
-Greypot is Open Source under the Apache License v2.0. You are free to use it and embed it in your projects whether hobby or commercial
+Dialoguss is Open Source under the Apache License v2.0. You are free to use it and embed it in your projects whether hobby or commercial
 """
 
 
@@ -105,7 +105,7 @@ logoURL = ""
 name = "Zikani Nyirenda Mwase"
 company = "NNDI Ltd"
 description = """
-Greypot helped us to speed up development of PDF reports and outputs that would have otherwise taken significant man-hours
+Dialoguss helped us to speed up development of PDF reports and outputs that would have otherwise taken significant man-hours
 """
 
 [[Params.testimonials.entries]]
@@ -114,7 +114,7 @@ logoURL = ""
 name = "XXXX"
 company = "XXXX"
 description = """
-Greypot helped with ...
+Dialoguss helped with ...
 """
 
 [[Params.testimonials.entries]]
@@ -123,7 +123,7 @@ logoURL = ""
 name = "XXXX"
 company = "XXXX"
 description = """
-Greypot helped with ...
+Dialoguss helped with ...
 """
 
 [[Params.testimonials.entries]]
@@ -132,7 +132,7 @@ logoURL = ""
 name = "XXXX"
 company = "XXXX"
 description = """
-Greypot helped with ...
+Dialoguss helped with ...
 """
 
 # [module]
