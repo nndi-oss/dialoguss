@@ -18,6 +18,7 @@ type Globals struct {
 type DialogussCLI struct {
 	Globals
 
+	Preview  PreviewCmd  `cmd:"" help:"Generate a preview of the dialoguss sessions using USSD Studio"`
 	Run      RunCmd      `cmd:"" help:"Run a dialoguss test from a file"`
 	Simulate SimulateCmd `cmd:"" help:"Simulate interaction with a USSD server in the command-line from a file"`
 }
