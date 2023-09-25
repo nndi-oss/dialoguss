@@ -53,7 +53,7 @@ type ussdStudioResponse struct {
 }
 
 func (studio *ussdStudioClient) GeneratePreview(dialogussConfig core.DialogussConfig) (string, error) {
-	apiURL := fmt.Sprintf("%s/api/generate-preview?utm_source=dialoguss-cli&_id=", studio.baseURL)
+	apiURL := fmt.Sprintf("%s/api/generate/preview?utm_source=dialoguss-cli&_id=", studio.baseURL)
 	data, err := json.Marshal(dialogussConfig)
 	if err != nil {
 		return "", fmt.Errorf("failed to parse request as JSON:\n%v\nError: %w", string(data), err)
