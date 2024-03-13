@@ -6,6 +6,8 @@ import (
 	"math/rand"
 	"net/http"
 	"os"
+	"regexp"
+	"strings"
 	"sync"
 	"time"
 
@@ -37,9 +39,15 @@ const (
 // Dialoguss the main type for interacting with dialoguss sessions
 type Dialoguss core.Dialoguss
 
+type ComponentStore map[string]map[string]string // namespace => component_id => expect
+
 // UnexpectedResultError unexpected result from the USSD application
 func UnexpectedResultError(want string, have string) error {
 	return fmt.Errorf("Unexpected result.\n\tWant: %s\n\tHave: %s", want, have)
+}
+
+func InvalidComponentIdError(step *core.Step, session *core.Session) error {
+	return fmt.Errorf("Invalid component id on step %d of session %s", step.StepNo, session.ID)
 }
 
 // DialStep is the first step in the session, dials the USSD service
@@ -104,8 +112,40 @@ func NewInteractiveSession(d core.DialogussConfig) *core.Session {
 	}
 }
 
+// ResolveStepExpectedValue extracts step's expected value from the step or component store
+func ResolveStepExpectedValue(s *core.Session, step *core.Step, store *ComponentStore) (string, error) {
+	expect := step.Expect
+
+	if len(expect) > 0 || len(step.ComponentID) == 0 {
+		return expect, nil
+	}
+
+	path := strings.SplitN(step.ComponentID, "/", 2)
+	namespace := "default"
+	component_id := ""
+
+	if len(path) == 2 {
+		namespace = path[0]
+		component_id = path[1]
+	} else {
+		component_id = path[0]
+	}
+
+	container, ok := (*store)[namespace]
+	if !ok {
+		return "", InvalidComponentIdError(step, s)
+	}
+
+	expect, ok = container[component_id]
+	if !ok {
+		return "", InvalidComponentIdError(step, s)
+	}
+
+	return expect, nil
+}
+
 // Run runs the dialoguss session and executes the steps in each session
-func Run(s *core.Session) error {
+func Run(s *core.Session, store *ComponentStore) error {
 	first := true
 	for i, step := range s.Steps {
 		if first {
@@ -119,7 +159,13 @@ func Run(s *core.Session) error {
 			log.Printf("Failed to execute step %d", step.StepNo)
 			return err
 		}
-		if result != step.Expect {
+
+		expect, err := ResolveStepExpectedValue(s, step, store)
+		if err != nil {
+			return err
+		}
+
+		if result != expect {
 			return UnexpectedResultError(step.Expect, result)
 		}
 	}
@@ -209,8 +255,42 @@ func (d *Dialoguss) LoadConfig() error {
 	return yaml.Unmarshal(b, &d.Config)
 }
 
+func (d *Dialoguss) GetComponents() (*ComponentStore, error) {
+	store := make(ComponentStore)
+	if d.Config.Components == nil {
+		return &store, nil
+	}
+
+	id_pattern := regexp.MustCompile(`^[A-Za-z]+[A-Za-z0-9_-]*$`)
+
+	for _, container := range d.Config.Components {
+		if !id_pattern.MatchString(container.Namespace) {
+			return nil, fmt.Errorf("Invalid component namespace: %s, expected alphanumeric chars only", container.Namespace)
+		}
+
+		components, ok := store[container.Namespace]
+		if !ok {
+			components = make(map[string]string)
+		}
+
+		for _, component := range container.Items {
+			if !id_pattern.MatchString(component.ID) {
+				return nil, fmt.Errorf("Invalid component ID: %s, expected alphanumeric chars only", component.ID)
+			}
+
+			components[component.ID] = component.Expect
+		}
+
+		store[container.Namespace] = components
+	}
+
+	return &store, nil
+}
+
 // RunAutomatedSessions Loads the sessions for this application
-func (d *Dialoguss) RunAutomatedSessions() error {
+//
+// Returns number of failed sessions
+func (d *Dialoguss) RunAutomatedSessions() (int, error) {
 	var wg sync.WaitGroup
 	wg.Add(len(d.Config.Sessions))
 
@@ -219,6 +299,11 @@ func (d *Dialoguss) RunAutomatedSessions() error {
 	apiType := ApiTypeAfricastalking
 	if trurouteMode {
 		apiType = ApiTypeTruroute
+	}
+
+	components, err := d.GetComponents()
+	if err != nil {
+		return 0, err
 	}
 
 	for _, session := range d.Config.Sessions {
@@ -239,7 +324,7 @@ func (d *Dialoguss) RunAutomatedSessions() error {
 
 		go func() {
 			defer wg.Done()
-			err := Run(s)
+			err := Run(s, components)
 			if err != nil {
 				// sessionErrors <-fmt.Sprintf("Error in Session %s. Got: %s ", s.ID, err)
 				sessionErrors[s.ID] = err
@@ -250,7 +335,7 @@ func (d *Dialoguss) RunAutomatedSessions() error {
 	for key, val := range sessionErrors {
 		log.Printf("Got error in session %s: %s", key, val)
 	}
-	return nil
+	return len(sessionErrors), nil
 }
 
 // Run executes the sessions
@@ -261,5 +346,6 @@ func (d *Dialoguss) Run() error {
 		return RunInteractive(session)
 	}
 
-	return d.RunAutomatedSessions()
+	_, err := d.RunAutomatedSessions()
+	return err
 }
