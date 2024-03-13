@@ -36,7 +36,7 @@ func TestResolveStepExpectedValue(t *testing.T) {
 	})
 
 	t.Run("Step.Expect overrides Component.Expect", func(*testing.T) {
-		want := "Testicles of Narnia"
+		want := "Chronicles of Narnia"
 
 		session := core.Session{ID: "foo"}
 		step := core.Step{StepNo: 1, Expect: want, ComponentID: "default/bar"}
