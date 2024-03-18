@@ -206,7 +206,7 @@ func TestRunAutomatedSession(t *testing.T) {
 			server.URL,
 			[]*core.Step{
 				{
-					ComponentID: "default.splash",
+					ComponentID: "default/splash",
 				},
 				{
 					ComponentID: "home",
@@ -242,7 +242,7 @@ func TestRunAutomatedSession(t *testing.T) {
 			server.URL,
 			[]*core.Step{
 				{
-					ComponentID: "default.splash",
+					ComponentID: "default/splash",
 				},
 				{
 					ComponentID: "home",
