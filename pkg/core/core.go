@@ -13,11 +13,22 @@ type Dialoguss struct {
 }
 
 type Step struct {
-	StepNo int
-	IsLast bool
-	IsDial bool
-	Text   string `yaml:"userInput"`
+	StepNo      int
+	IsLast      bool
+	IsDial      bool
+	Text        string `yaml:"userInput"`
+	Expect      string `yaml:"expect"`
+	ComponentID string `yaml:"componentId"`
+}
+
+type Component struct {
+	ID     string `yaml:"id"`
 	Expect string `yaml:"expect"`
+}
+
+type ComponentNamespace struct {
+	Namespace string       `yaml:"namespace"`
+	Items     []*Component `yaml:"component"`
 }
 
 type Session struct {
@@ -33,9 +44,10 @@ type Session struct {
 }
 
 type DialogussConfig struct {
-	URL         string    `yaml:"url"`
-	Dial        string    `yaml:"dial"`
-	PhoneNumber string    `yaml:"phoneNumber"`
-	Sessions    []Session `yaml:"sessions"`
-	Timeout     int       `yaml:"timeout"`
+	URL         string               `yaml:"url"`
+	Dial        string               `yaml:"dial"`
+	PhoneNumber string               `yaml:"phoneNumber"`
+	Sessions    []Session            `yaml:"sessions"`
+	Components  []ComponentNamespace `yaml:"components"`
+	Timeout     int                  `yaml:"timeout"`
 }
