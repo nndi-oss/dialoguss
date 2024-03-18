@@ -146,13 +146,7 @@ func ResolveStepExpectedValue(s *core.Session, step *core.Step, store *Component
 
 // Run runs the dialoguss session and executes the steps in each session
 func Run(s *core.Session, store *ComponentStore) error {
-	first := true
 	for i, step := range s.Steps {
-		if first {
-			ExecuteStep(step, s)
-			first = false
-			continue
-		}
 		step.StepNo = i
 		result, err := ExecuteStep(step, s)
 		if err != nil {
