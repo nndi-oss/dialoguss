@@ -2,7 +2,7 @@ package africastalking
 
 import (
 	"errors"
-	"io/ioutil"
+	"io"
 	"log"
 	"net/url"
 	"regexp"
@@ -40,7 +40,7 @@ func (s *AfricasTalkingRouteStep) ExecuteAsAfricasTalking(session *core.Session)
 		return "", err
 	}
 
-	b, err := ioutil.ReadAll(res.Body)
+	b, err := io.ReadAll(res.Body)
 	defer res.Body.Close()
 	if err != nil {
 		return "", err
