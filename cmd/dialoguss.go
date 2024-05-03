@@ -18,10 +18,11 @@ import (
 )
 
 var (
-	interactive    bool
-	file           string
-	trurouteMode   bool
-	defaultTimeout = 21 * time.Second
+	interactive        bool
+	file               string
+	trurouteMode       bool
+	defaultTimeout     = 21 * time.Second
+	UssdCharacterLimit = 160
 )
 
 const (
@@ -207,6 +208,11 @@ func RunInteractive(s *core.Session) error {
 	if err != nil {
 		return err
 	}
+
+	if n := len(output); n > UssdCharacterLimit {
+		fmt.Printf("\n\n\tWARN: USSD response contains %d characters\n\twhich is %d more than the recommended limit\n\n", n, n-UssdCharacterLimit)
+	}
+
 	fmt.Println(output)
 	// Execute other steps if we haven't received an "END" response
 sessionLoop:
@@ -229,6 +235,11 @@ sessionLoop:
 		if err != nil {
 			return err
 		}
+
+		if n := len(output); n > UssdCharacterLimit {
+			fmt.Printf("\n\n\tWARN: USSD response contains %d characters\n\twhich is %d more than the recommended limit\n\n", n, n-UssdCharacterLimit)
+		}
+
 		fmt.Println(output)
 		if step.IsLast {
 			break
