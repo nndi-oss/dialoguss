@@ -1,18 +1,17 @@
 package cmd
 
 import (
-	"bytes"
-	"encoding/json"
 	"fmt"
-	"io"
 	"log"
-	"net/http"
+	"os"
+	"path/filepath"
 
 	"github.com/nndi-oss/dialoguss/pkg/core"
+	"github.com/nndi-oss/dialoguss/pkg/preview"
 )
 
 type PreviewCmd struct {
-	ServerURL string `cmd:"" help:"Server URL for a USSD Studio server" default:"https://ussd-studio-api.nndi.cloud"`
+	OutputDir string `cmd:"" default:"dialoguss_preview" help:"Output directory, defaults 'dialoguss_preview'"`
 }
 
 func (r *PreviewCmd) Run(globals *Globals) error {
@@ -26,56 +25,47 @@ func (r *PreviewCmd) Run(globals *Globals) error {
 	}
 
 	ussdStudio := &ussdStudioClient{
-		baseURL: r.ServerURL,
-		Client:  &http.Client{},
+		outputDir: r.OutputDir,
 	}
 
-	previewURL, err := ussdStudio.GeneratePreview(d.Config)
+	folder, err := ussdStudio.GeneratePreview(d.Config)
 	if err != nil {
 		log.Fatalf("Failed to generate preview from USSD Studio Server. Got error %s", err)
 	}
 
 	fmt.Println("Dialoguss USSD Studio Preview Generated")
 	fmt.Print("You can open the Preview at this URL\n\n")
-	fmt.Printf("\tURL: %s\n", previewURL)
+	fmt.Printf("\tDirectory: %s\n", folder)
 
 	return nil
 }
 
 type ussdStudioClient struct {
-	baseURL string
-	Client  *http.Client
-}
-
-type ussdStudioResponse struct {
-	PreviewURL   string `json:"URL"`
-	PreviewToken string `json:"Token"`
+	outputDir string
 }
 
 func (studio *ussdStudioClient) GeneratePreview(dialogussConfig core.DialogussConfig) (string, error) {
-	apiURL := fmt.Sprintf("%s/api/generate/preview?utm_source=dialoguss-cli&_id=", studio.baseURL)
-	data, err := json.Marshal(dialogussConfig)
-	if err != nil {
-		return "", fmt.Errorf("failed to parse request as JSON:\n%v\nError: %w", string(data), err)
+	outdir := "./dialoguss_preview"
+	if studio.outputDir != "" {
+		if _, err := os.Stat(studio.outputDir); os.IsNotExist(err) {
+			mkErr := os.Mkdir(studio.outputDir, 0o755)
+			if mkErr != nil {
+				return "", fmt.Errorf("directory does not exist and could not be created %w", mkErr)
+			}
+		}
+		outdir = studio.outputDir
 	}
 
-	response, err := studio.Client.Post(apiURL, "application/json", bytes.NewReader(data))
-	if err != nil {
-		return "", fmt.Errorf("failed to send request to %s\n Error %w", apiURL, err)
+	for _, session := range dialogussConfig.Sessions {
+		sessionOutdir := filepath.Join(outdir, session.ID)
+		err := os.Mkdir(sessionOutdir, 0o775)
+		if err != nil {
+			return "", nil
+		}
+		_, err = preview.GenerateScreens(&session, sessionOutdir)
+		if err != nil {
+			return "", nil
+		}
 	}
-
-	responseData, err := io.ReadAll(response.Body)
-	if err != nil {
-		return "", fmt.Errorf("failed to read response body from server: %w", err)
-	}
-	defer response.Body.Close()
-
-	var previewResponse ussdStudioResponse
-	err = json.Unmarshal(responseData, &previewResponse)
-	if err != nil {
-		return "", fmt.Errorf("failed to parse response from server as JSON:\n%v\nError: %w", string(responseData), err)
-	}
-
-	// TODO: store the preview token?
-	return previewResponse.PreviewURL, nil
+	return outdir, nil
 }
