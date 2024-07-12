@@ -231,6 +231,7 @@ sessionLoop:
 		}
 
 		step = NewStep(i, input, "")
+
 		output, err = ExecuteStep(step, s)
 		if err != nil {
 			return err
@@ -239,6 +240,9 @@ sessionLoop:
 		if n := len(output); n > UssdCharacterLimit {
 			fmt.Printf("\n\n\tWARN: USSD response contains %d characters\n\twhich is %d more than the recommended limit\n\n", n, n-UssdCharacterLimit)
 		}
+
+		step.Expect = output
+		s.Steps = append(s.Steps, step)
 
 		fmt.Println(output)
 		if step.IsLast {

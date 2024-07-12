@@ -31,8 +31,14 @@ func (s *AfricasTalkingRouteStep) ExecuteAsAfricasTalking(session *core.Session)
 	if &text == nil {
 		return "", errors.New("Input Text cannot be nil")
 	}
-	data.Set("text", text)  // TODO(zikani): concat the input
-	data.Set("channel", "") // TODO: Get the channel
+
+	if concatedText := ConcatText(session); concatedText != "" {
+		data.Set("text", concatedText)
+	} else {
+		data.Set("text", text)
+	}
+
+	data.Set("channel", "")
 
 	res, err := session.Client.PostForm(session.Url, data)
 	if err != nil {
