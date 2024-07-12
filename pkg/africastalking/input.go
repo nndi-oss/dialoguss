@@ -7,6 +7,10 @@ import (
 )
 
 func ConcatText(session *core.Session) string {
+	if session == nil {
+		return ""
+	}
+
 	inputs := make([]string, 0)
 	for _, step := range session.Steps {
 		inputs = append(inputs, step.Text)

@@ -8,6 +8,19 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+func TestConcatTextWithNilSession(t *testing.T) {
+	got := africastalking.ConcatText(nil)
+	assert.Equal(t, "", got)
+}
+
+func TestConcatTextWithNilSteps(t *testing.T) {
+	got := africastalking.ConcatText(&core.Session{
+		Steps: nil,
+	})
+
+	assert.Equal(t, "", got)
+}
+
 func TestConcatText(t *testing.T) {
 	got := africastalking.ConcatText(&core.Session{
 		Steps: []*core.Step{
