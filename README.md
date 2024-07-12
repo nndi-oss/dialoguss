@@ -40,9 +40,15 @@ phoneNumber: 265888123456
 ```
 
 ```sh
-$ dialoguss -i -f app.yaml
-Sending *123*1234# to <app>
-USSD Response:
+$ dialoguss --interactive --file=app.yaml simulate
+```
+
+`dialoguss` will start hitting your USSD endpoint to enable you to simulate
+interaction, the whole session can be performed from the command-line.
+
+An example output is below:
+
+```
 What is your name?
 > name: Zikani
 
@@ -85,7 +91,7 @@ sessions:
 ```
 
 ```sh
-$ dialoguss -f app.yml
+$ dialoguss --file=app.yml run
 All steps in session 12345678910 run successfully
 ```
 
@@ -104,4 +110,4 @@ it to production.
 
 ---
 
-Copyright (c) 2018 - 2020, NNDI
+Copyright (c) 2018 - 2024, NNDI
