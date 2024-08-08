@@ -22,6 +22,7 @@ var (
 
 // ExecuteAsAfricasTalking Executes a step as an AfricasTalking API request
 // May return an empty string ("") upon failure
+// See: https://developers.africastalking.com/docs/ussd/handle_sessions
 func (s *AfricasTalkingRouteStep) ExecuteAsAfricasTalking(session *core.Session) (string, error) {
 	data := url.Values{}
 	data.Set("sessionId", session.ID)
@@ -38,7 +39,7 @@ func (s *AfricasTalkingRouteStep) ExecuteAsAfricasTalking(session *core.Session)
 		data.Set("text", text)
 	}
 
-	data.Set("channel", "")
+	data.Set("networkCode", "dialoguss")
 
 	res, err := session.Client.PostForm(session.Url, data)
 	if err != nil {
