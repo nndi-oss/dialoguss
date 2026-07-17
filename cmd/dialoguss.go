@@ -14,6 +14,7 @@ import (
 	"github.com/nndi-oss/dialoguss/pkg/africastalking"
 	"github.com/nndi-oss/dialoguss/pkg/core"
 	"github.com/nndi-oss/dialoguss/pkg/trueroute"
+	"github.com/nndi-oss/dialoguss/pkg/whatsapp"
 	"gopkg.in/yaml.v2"
 )
 
@@ -75,13 +76,17 @@ func NewStep(i int, text string, expect string) *core.Step {
 
 // Execute executes a step and returns the result of the request may return an empty string ("") upon failure
 func ExecuteStep(s *core.Step, session *core.Session) (string, error) {
-	if trurouteMode {
+	switch session.ApiType {
+	case "WHATSAPP":
+		driver := whatsapp.WhatsAppDriver{Step: s}
+		return driver.Execute(session)
+	case ApiTypeTruroute:
 		step := trueroute.TrueRouteStep{Step: s}
 		return step.ExecuteAsTruRouteRequest(session)
+	default:
+		step := africastalking.AfricasTalkingRouteStep{Step: s}
+		return step.ExecuteAsAfricasTalking(session)
 	}
-
-	step := africastalking.AfricasTalkingRouteStep{Step: s}
-	return step.ExecuteAsAfricasTalking(session)
 }
 
 // AddStep adds step to session
